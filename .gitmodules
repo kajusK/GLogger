@@ -1,0 +1,6 @@
+[submodule "fw/sources/external/libopencm3"]
+	path = fw/sources/external/libopencm3
+	url = https://github.com/libopencm3/libopencm3.git
+[submodule "fw/sources/external/Unity"]
+	path = fw/sources/external/Unity
+	url = https://github.com/ThrowTheSwitch/Unity.git
