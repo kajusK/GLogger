@@ -7,7 +7,9 @@ BOARD_GPIO_FILE = $(SOURCES)/app/board_gpio.h
 # files to build
 FILES = $(wildcard $(SOURCES)/app/*.c) \
 	 $(wildcard $(SOURCES)/hal/*.c) \
-	 $(wildcard $(SOURCES)/utils/*.c)
+	 $(wildcard $(SOURCES)/drivers/*.c) \
+	 $(wildcard $(SOURCES)/utils/*.c) \
+	 $(wildcard $(SOURCES)/cgui/*.c)
 # strip sources path from files to build to allow building when sources contains ..
 CFILES = $(subst $(SOURCES)/, , $(FILES))
 
