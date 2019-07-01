@@ -30,6 +30,7 @@
 #define __HAL_IO_H
 
 #include <types.h>
+#include <libopencm3/stm32/gpio.h> /* required for PORTA,... defines */
 
 /** setting bits in IO registers */
 #define PIN_MODE_INPUT(n)           (0U << ((n) * 2U))
