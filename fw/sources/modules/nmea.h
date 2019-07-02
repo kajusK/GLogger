@@ -76,6 +76,12 @@ typedef enum {
     NMEA_SENTENCE_GGA,
 } nmea_type_t;
 
+typedef struct {
+    int8_t deg;     /* positive for N, E, negative for S, W */
+    uint8_t min;
+    uint16_t frac;
+} nmea_coord_t;
+
 /**
  * Check if the message has a valid checksum, $ at the beginning is optional
  *
@@ -116,6 +122,14 @@ extern bool Nmea_ParseGga(const char *msg, nmea_gga_t *gga);
  * @return Message type
  */
 extern nmea_type_t Nmea_GetSentenceType(const char *msg);
+
+/**
+ * Convert nmea float to gps coordinate
+ *
+ * @param f     Float number
+ * @param coord Area to store converted gps coordinates
+ */
+extern void Nmea_Float2Coord(const nmea_float_t *f, nmea_coord_t *coord);
 
 /**
  * Add character to internal buffer and detect complete NMEA message

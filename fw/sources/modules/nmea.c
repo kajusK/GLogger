@@ -424,6 +424,21 @@ nmea_type_t Nmea_GetSentenceType(const char *msg)
     return NMEA_SENTENCE_UNKNOWN;
 }
 
+/**
+ * Convert nmea float to gps coordinate
+ *
+ * @param f     Float number
+ * @param coord Area to store converted gps coordinates
+ */
+void Nmea_Float2Coord(const nmea_float_t *f, nmea_coord_t *coord)
+{
+    int32_t min;
+    coord->deg = f->num / (f->scale * 100);
+    min = f->num / f->scale - coord->deg * 100;
+    coord->min = abs(min);
+    coord->frac = abs(f->num - (coord->deg*100 + min)*f->scale);
+}
+
 const char *Nmea_AddChar(char c)
 {
     static char buf[NMEA_MAX_MSG_LEN];

@@ -221,6 +221,19 @@ TEST(NMEA, GetSentenceType)
         "$GPFOO,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,"));
 }
 
+TEST(NMEA, Float2Coord)
+{
+    nmea_float_t f;
+    nmea_coord_t coord;
+
+    f.num = -53216802;
+    f.scale = 10000;
+    Nmea_Float2Coord(&f, &coord);
+    TEST_ASSERT_EQUAL(-53, coord.deg);
+    TEST_ASSERT_EQUAL(21, coord.min);
+    TEST_ASSERT_EQUAL(6802, coord.frac);
+}
+
 TEST(NMEA, AddChar)
 {
     char buf[] = "$foobar,444,123,*32";
@@ -245,6 +258,7 @@ TEST_GROUP_RUNNER(NMEA)
     RUN_TEST_CASE(NMEA, ParseRmc);
     RUN_TEST_CASE(NMEA, ParseGga);
     RUN_TEST_CASE(NMEA, GetSentenceType);
+    RUN_TEST_CASE(NMEA, Float2Coord);
     RUN_TEST_CASE(NMEA, AddChar);
 }
 
