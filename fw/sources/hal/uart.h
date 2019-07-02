@@ -38,7 +38,15 @@ typedef void (* uartd_callback_t)(uint8_t byte);
  * @param [in] buf	Data to be send
  * @param len		Length of the data buffer
  */
-extern void UARTd_Send(uint8_t device, const char *buf, size_t len);
+extern void UARTd_Write(uint8_t device, const uint8_t *buf, size_t len);
+
+/**
+ * Send string over uart in blocking mode
+ *
+ * @param device    Device ID (starts from 1)
+ * @param [in] msg  Null terminated string
+ */
+extern void UARTd_Puts(uint8_t device, const char *msg);
 
 /**
  * Set callback for byte received, callback is called from interrupt!

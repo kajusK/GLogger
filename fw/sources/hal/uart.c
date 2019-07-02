@@ -149,12 +149,21 @@ static uint8_t UARTdi_GetIRQ(uint8_t device)
 	return uartdi_irq[device - 1];
 }
 
-void UARTd_Send(uint8_t device, const char *buf, size_t len)
+void UARTd_Write(uint8_t device, const uint8_t *buf, size_t len)
 {
 	uint32_t uart = UARTdi_GetDevice(device);
 
 	while (len-- != 0) {
 		usart_send_blocking(uart, *buf++);
+	}
+}
+
+void UARTd_Puts(uint8_t device, const char *msg)
+{
+	uint32_t uart = UARTdi_GetDevice(device);
+
+	while (*msg != '\0') {
+		usart_send_blocking(uart, *msg++);
 	}
 }
 
