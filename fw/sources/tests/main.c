@@ -30,6 +30,7 @@ uint8_t assert_should_fail = false;
 static void RunAll(void)
 {
     Time_RunTests();
+    Nmea_RunTests();
 }
 
 int main(int argc, const char *argv[])
