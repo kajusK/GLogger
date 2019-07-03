@@ -53,6 +53,13 @@ extern void Storage_Erase(void);
 extern size_t Storage_SpaceRemaining(void);
 
 /**
+ * Get amount of space already used by gps records
+ *
+ * @return Items already stored in memory
+ */
+extern size_t Storage_SpaceUsed(void);
+
+/**
  * Add GPS record to memory
  *
  * @param info      Record to store

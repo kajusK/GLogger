@@ -16,7 +16,7 @@
  */
 
 /**
- * @file    app/storage.h
+ * @file    app/storage.c
  * @brief   Storing GPS data into external flash
  *
  * @addtogroup app
@@ -57,6 +57,11 @@ void Storage_Erase(void)
 size_t Storage_SpaceRemaining(void)
 {
     return (STORAGE_SIZE - storagei_offset)/sizeof(storage_item_t);
+}
+
+size_t Storage_SpaceUsed(void)
+{
+    return storagei_offset/sizeof(storage_item_t);
 }
 
 bool Storage_Add(const gps_info_t *info)
