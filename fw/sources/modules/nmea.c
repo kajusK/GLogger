@@ -433,10 +433,10 @@ nmea_type_t Nmea_GetSentenceType(const char *msg)
 void Nmea_Float2Coord(const nmea_float_t *f, nmea_coord_t *coord)
 {
     int32_t min;
-    coord->deg = f->num / (f->scale * 100);
-    min = f->num / f->scale - coord->deg * 100;
+    coord->deg = f->num / ((int32_t)f->scale * 100);
+    min = f->num / (int32_t)f->scale - coord->deg * 100;
     coord->min = abs(min);
-    coord->frac = abs(f->num - (coord->deg*100 + min)*f->scale);
+    coord->frac = abs(f->num - (coord->deg*100 + min)*(int32_t)f->scale);
 }
 
 const char *Nmea_AddChar(char c)

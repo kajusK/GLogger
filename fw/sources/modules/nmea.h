@@ -45,7 +45,7 @@ typedef struct {
 
 typedef struct {
     int32_t num;
-    int32_t scale;
+    uint32_t scale;
 } nmea_float_t;
 
 typedef struct {
