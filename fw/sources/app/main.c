@@ -9,6 +9,7 @@
 #include <drivers/ssd1306.h>
 #include <drivers/gps.h>
 #include <utils/time.h>
+#include "app/storage.h"
 
 int main(void)
 {
@@ -23,6 +24,7 @@ int main(void)
     Gps_Init();
     SpiFlash_WriteEnable();
     SSD1306_Init();
+    Storage_Init();
 
     while (1) {
         (void) Gps_Get();
