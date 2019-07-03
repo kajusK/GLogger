@@ -26,6 +26,8 @@
 #ifndef __DRIVERS_SPI_FLASH_H
 #define __DRIVERS_SPI_FLASH_H
 
+#include <types.h>
+
 /**
  * Disable write protection
  */
