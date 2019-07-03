@@ -31,6 +31,7 @@ static void RunAll(void)
 {
     Time_RunTests();
     Nmea_RunTests();
+    Ringbuf_RunTests();
 }
 
 int main(int argc, const char *argv[])

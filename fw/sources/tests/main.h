@@ -31,6 +31,7 @@
 
 extern void Time_RunTests(void);
 extern void Nmea_RunTests(void);
+extern void Ringbuf_RunTests(void);
 
 extern uint8_t assert_should_fail;
 
