@@ -60,6 +60,13 @@ extern size_t Storage_SpaceRemaining(void);
 extern size_t Storage_SpaceUsed(void);
 
 /**
+ * Get size of the storage
+ *
+ * @return Size of the storage in items
+ */
+extern size_t Storage_GetSize(void);
+
+/**
  * Add GPS record to memory
  *
  * @param info      Record to store

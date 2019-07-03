@@ -64,6 +64,11 @@ size_t Storage_SpaceUsed(void)
     return storagei_offset/sizeof(storage_item_t);
 }
 
+size_t Storage_GetSize(void)
+{
+    return STORAGE_SIZE/sizeof(storage_item_t);
+}
+
 bool Storage_Add(const gps_info_t *info)
 {
     storage_item_t item;
