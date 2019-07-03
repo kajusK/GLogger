@@ -16,28 +16,42 @@
  */
 
 /**
- * @file    main.h
- * @brief   Main file for unit tests
+ * @file    utils/math.h
+ * @brief   Lightweight math functions
  *
- * @addtogroup tests
+ * @addtogroup utils
  * @{
  */
 
-#include "main.h"
+#ifndef __UTILS_MATH_H
+#define __UTILS_MATH_H
 
-uint8_t assert_should_fail = false;
+#include <types.h>
 
-static void RunAll(void)
-{
-    Time_RunTests();
-    Nmea_RunTests();
-    Ringbuf_RunTests();
-    Math_RunTests();
-}
+/**
+ * Calculate sin function
+ *
+ * @param mdeg  angle in thousands of a degree
+ * @return sin value in thousands
+ */
+extern int32_t msin(int32_t mdeg);
 
-int main(int argc, const char *argv[])
-{
-    UnityMain(argc, argv, RunAll);
-}
+/**
+ * Calculate cos function
+ *
+ * @param mdeg  angle in thousands of a degree
+ * @return cos value in thousands
+ */
+extern int32_t mcos(int32_t mdeg);
+
+/**
+ * Calculate tan function
+ *
+ * @param mdeg  angle in thousands of a degree
+ * @return tan value in thousands
+ */
+extern int32_t mtan(int32_t mdeg);
+
+#endif
 
 /** @} */
