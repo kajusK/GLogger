@@ -64,12 +64,6 @@ static int32_t mathi_sin_find(int32_t x)
     return ((y2-y1)*(x-x1))/(x2-x1) + y1;
 }
 
-/**
- * Calculate sin function
- *
- * @param mdeg  angle in thousands of a degree
- * @return sin value in thousands
- */
 int32_t msin(int32_t mdeg)
 {
     int32_t sign = 1;
@@ -93,12 +87,6 @@ int32_t msin(int32_t mdeg)
     return sign*mathi_sin_find(180000-mdeg);
 }
 
-/**
- * Calculate sin function
- *
- * @param mdeg  angle in thousands of a degree
- * @return cos value in thousands
- */
 int32_t mcos(int32_t mdeg)
 {
     return msin(mdeg + 90000);
@@ -114,5 +102,22 @@ int32_t mtan(int32_t mdeg)
     return (msin(mdeg)*1000)/cos;
 }
 
+uint32_t int_sqrt(uint64_t x)
+{
+    /* based on http://ww1.microchip.com/downloads/en/AppNotes/91040a.pdf */
+    /* https://stackoverflow.com/a/10330951 */
+    uint32_t res = 0;
+    uint32_t add = 1 << 31;
+    for(int i = 0; i < 32; i++)
+    {
+        uint32_t temp = res | add;
+        uint64_t g2 = (uint64_t)temp*temp;
+        if (x >= g2) {
+            res = temp;
+        }
+        add >>= 1;
+    }
+    return res;
+}
 
 /** @} */

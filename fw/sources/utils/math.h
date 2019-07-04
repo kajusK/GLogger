@@ -52,6 +52,14 @@ extern int32_t mcos(int32_t mdeg);
  */
 extern int32_t mtan(int32_t mdeg);
 
+/**
+ * Calculate square root with integer arithmetics only
+ *
+ * @param x     Number to get square root of
+ * @return  Square root of the number
+ */
+extern uint32_t int_sqrt(uint64_t x);
+
 #endif
 
 /** @} */

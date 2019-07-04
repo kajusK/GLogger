@@ -81,11 +81,19 @@ TEST(MATH, tan)
     TEST_ASSERT_EQUAL(-482, mtan(1234231));
 }
 
+TEST(MATH, sqrt)
+{
+    TEST_ASSERT_EQUAL(5, int_sqrt(25));
+    TEST_ASSERT_EQUAL(10, int_sqrt(100));
+    TEST_ASSERT_EQUAL(1234, int_sqrt(1522756));
+}
+
 TEST_GROUP_RUNNER(MATH)
 {
     RUN_TEST_CASE(MATH, sin);
     RUN_TEST_CASE(MATH, cos);
     RUN_TEST_CASE(MATH, tan);
+    RUN_TEST_CASE(MATH, sqrt);
 }
 
 void Math_RunTests(void)

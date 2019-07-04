@@ -33,6 +33,7 @@ static void RunAll(void)
     Nmea_RunTests();
     Ringbuf_RunTests();
     Math_RunTests();
+    Nav_RunTests();
 }
 
 int main(int argc, const char *argv[])
