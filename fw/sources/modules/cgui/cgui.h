@@ -60,6 +60,7 @@ typedef struct {
     const cgui_font_t *font;    /** Currently used font */
 } cgui_display_t;
 
+#include "fonts.h"
 
 /**
  * Fill whole screen with selected value
