@@ -74,6 +74,23 @@ static uint32_t Nmeai_Str2Dec(const char **str, uint8_t len)
 }
 
 /**
+ * Convert nmea lat/lon degrees minutes format to decimal degrees
+ *
+ * @param f     Float number to be converted (4912.1234), result stored here (49.xxxxx)
+ */
+static void Nmeai_Float2DecDeg(nmea_float_t *f)
+{
+    int32_t min;
+    int32_t deg;
+
+    f->scale *= 100;
+    deg = f->num / f->scale;
+    min = f->num - deg*f->scale;
+
+    f->num = deg*f->scale + min*10/6;
+}
+
+/**
  * Helper function for Nmeai_Scan, processes single item from NMEA message
  *
  * @param msg       Remaining part of nmea message
@@ -143,6 +160,7 @@ static const char *Nmeai_ScanHelper(const char *msg, char format, va_list ap)
             } break;
 
         /* float 123.456 */
+        case 'p':
         case 'f': {
             int32_t scale = 1;
             int32_t value = 0;
@@ -171,6 +189,10 @@ static const char *Nmeai_ScanHelper(const char *msg, char format, va_list ap)
             nmea_float_t *f = va_arg(ap, nmea_float_t *);
             f->num = sign*value;
             f->scale = scale;
+            /* convert coordinates to decimal degrees */
+            if (format == 'p') {
+                Nmeai_Float2DecDeg(f);
+            }
             } break;
 
         /* date 110122 = 11th of January, 2022 */
@@ -246,6 +268,7 @@ static const char *Nmeai_ScanHelper(const char *msg, char format, va_list ap)
  *  i - positive integer (0, 05, 123,..) (int *)
  *  s - string (char *), pointed buffer must be long enough for string and '\0'
  *  f - floats (123.456)
+ *  p - latitude/longitude (1245.1234 = 12°45.1234', will convert to decimal degrees)
  *  d - date (110112 = 11th January 2012) (nmea_date_t *)
  *  t - time (111213 or 111213.1423) (nmea_time_t *)
  *  _ - ignored field
@@ -352,7 +375,7 @@ bool Nmea_ParseRmc(const char *msg, nmea_rmc_t *rmc)
         return false;
     }
     /* $GPRMC,225446,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E*68 */
-    ret = Nmeai_Scan(msg, "stcfDfDffdfD",
+    ret = Nmeai_Scan(msg, "stcpDpDffdfD",
             type, &rmc->fix_time, &c, &rmc->lat, &dir_lat, &rmc->lon, &dir_lon,
             &rmc->speed_kmh, &rmc->course, &rmc->date,
             &rmc->mag_variation, &dir_var);
@@ -394,7 +417,7 @@ bool Nmea_ParseGga(const char *msg, nmea_gga_t *gga)
         return false;
     }
     /* $GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76 */
-    ret = Nmeai_Scan(msg, "stfDfDiiffcfc__",
+    ret = Nmeai_Scan(msg, "stpDpDiiffcfc__",
             type, &gga->fix_time, &gga->lat, &dir_lat, &gga->lon, &dir_lon,
             &quality, &satellites, &gga->hdop, &gga->altitude_m, &alt_unit,
             &gga->above_ellipsoid_m, &ellipsoid_unit);
@@ -422,21 +445,6 @@ nmea_type_t Nmea_GetSentenceType(const char *msg)
     }
 
     return NMEA_SENTENCE_UNKNOWN;
-}
-
-/**
- * Convert nmea float to gps coordinate
- *
- * @param f     Float number
- * @param coord Area to store converted gps coordinates
- */
-void Nmea_Float2Coord(const nmea_float_t *f, nmea_coord_t *coord)
-{
-    int32_t min;
-    coord->deg = f->num / ((int32_t)f->scale * 100);
-    min = f->num / (int32_t)f->scale - coord->deg * 100;
-    coord->min = abs(min);
-    coord->frac = abs(f->num - (coord->deg*100 + min)*(int32_t)f->scale);
 }
 
 const char *Nmea_AddChar(char c)

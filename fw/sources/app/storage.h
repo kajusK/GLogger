@@ -30,12 +30,10 @@
 #include "drivers/gps.h"
 
 typedef struct {
-    int8_t lat_deg;
-    uint8_t lat_min;
-    uint16_t lat_frac;
-    int8_t lon_deg;
-    uint8_t lon_min;
-    uint16_t lon_frac;
+    int32_t lat;
+    int32_t lat_scale;
+    int32_t lon;
+    int32_t lon_scale;
     time_t timestamp;
     int16_t elevation_m;
 } __attribute__((packed)) storage_item_t;

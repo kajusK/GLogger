@@ -77,12 +77,10 @@ bool Storage_Add(const gps_info_t *info)
         return false;
     }
 
-    item.lat_deg = info->lat.deg;
-    item.lat_min = info->lat.min;
-    item.lat_frac = info->lat.frac;
-    item.lon_deg = info->lon.deg;
-    item.lon_min = info->lon.min;
-    item.lon_frac = info->lon.frac;
+    item.lat = info->lat.num;
+    item.lat_scale = info->lat.scale;
+    item.lon = info->lon.num;
+    item.lon_scale = info->lon.scale;
     item.timestamp = info->timestamp;
     item.elevation_m = info->altitude_dm / 10;
 

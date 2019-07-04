@@ -52,7 +52,7 @@ static void Gpsi_RxCb(uint8_t c)
  * @param scale Required scale
  * @return  Converted number
  */
-static int32_t Gpsi_NmeaF2Dec(const nmea_float_t *f, uint32_t scale)
+static int32_t Gpsi_NmeaF2Dec(const nmea_float_t *f, int32_t scale)
 {
     if (f->scale < scale) {
         return f->num * (scale/f->scale);
@@ -95,8 +95,8 @@ static bool Gpsi_ProcessRmc(const char *msg, gps_info_t *info)
     }
 
     info->speed_dmh = Gpsi_NmeaF2Dec(&rmc.speed_kmh, 10);
-    Nmea_Float2Coord(&rmc.lat, &info->lat);
-    Nmea_Float2Coord(&rmc.lon, &info->lon);
+    info->lat = rmc.lat;
+    info->lon = rmc.lon;
     info->timestamp = Gpsi_Nmea2Timestamp(&rmc.fix_time, &rmc.date);
     return true;
 }
@@ -110,8 +110,8 @@ static bool Gpsi_ProcessGga(const char *msg, gps_info_t *info)
     }
 
     info->satellites = gga.satellites;
-    Nmea_Float2Coord(&gga.lat, &info->lat);
-    Nmea_Float2Coord(&gga.lon, &info->lon);
+    info->lat = gga.lat;
+    info->lon = gga.lon;
     info->hdop_dm = Gpsi_NmeaF2Dec(&gga.hdop, 10);
     return true;
 }

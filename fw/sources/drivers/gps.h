@@ -32,8 +32,8 @@
 #include "modules/nmea.h"
 
 typedef struct {
-    nmea_coord_t lat;
-    nmea_coord_t lon;
+    nmea_float_t lat;   /* In decimal degrees */
+    nmea_float_t lon;   /* In deciaml degrees */
     int32_t altitude_dm;/* Altitude in dm */
     int32_t speed_dmh;  /* speed in dm/s */
     int32_t hdop_dm;    /* location precision */

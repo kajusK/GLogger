@@ -64,6 +64,15 @@ TEST(NMEA, Str2Dec)
     TEST_ASSERT_EQUAL('3', *str3);
 }
 
+TEST(NMEA, Float2Decdeg)
+{
+    nmea_float_t f = {-1155892345, 100000};
+
+    Nmeai_Float2DecDeg(&f);
+    TEST_ASSERT_EQUAL(-1159820575, f.num);
+    TEST_ASSERT_EQUAL(10000000, f.scale);
+}
+
 TEST(NMEA, VerifyChecksum)
 {
     TEST_ASSERT_TRUE(Nmea_VerifyChecksum(
@@ -115,15 +124,16 @@ TEST(NMEA, Scan)
     nmea_date_t date;
     nmea_time_t time1, time2, time3;
 
-    TEST_ASSERT_TRUE(Nmeai_Scan("GPFOO,f,ign,05,+12.34,-1111", "sc_iff",
+    TEST_ASSERT_TRUE(Nmeai_Scan("GPFOO,f,ign,05,+12.04,-4912.12345", "sc_ifp",
             str, &c, &i, &f1, &f2));
     TEST_ASSERT_EQUAL_STRING("GPFOO", str);
     TEST_ASSERT_EQUAL('f', c);
     TEST_ASSERT_EQUAL(5, i);
-    TEST_ASSERT_EQUAL(1234, f1.num);
+    TEST_ASSERT_EQUAL(1204, f1.num);
     TEST_ASSERT_EQUAL(100, f1.scale);
-    TEST_ASSERT_EQUAL(-1111, f2.num);
-    TEST_ASSERT_EQUAL(1, f2.scale);
+    /* converted to decimal degrees coordinates */
+    TEST_ASSERT_EQUAL(-492020575, f2.num);
+    TEST_ASSERT_EQUAL(10000000, f2.scale);
 
     TEST_ASSERT_TRUE(Nmeai_Scan("$N,S,120125,122508,053011.123,*23", "DDdttt",
             &dir1, &dir2, &date, &time1, &time2, &time3));
@@ -165,10 +175,10 @@ TEST(NMEA, ParseRmc)
     TEST_ASSERT_EQUAL(8, rmc.fix_time.hour);
     TEST_ASSERT_EQUAL(18, rmc.fix_time.minute);
     TEST_ASSERT_EQUAL(36, rmc.fix_time.second);
-    TEST_ASSERT_EQUAL(-375165, rmc.lat.num);
-    TEST_ASSERT_EQUAL(100, rmc.lat.scale);
-    TEST_ASSERT_EQUAL(1450736, rmc.lon.num);
-    TEST_ASSERT_EQUAL(100, rmc.lon.scale);
+    TEST_ASSERT_EQUAL(-378608, rmc.lat.num);
+    TEST_ASSERT_EQUAL(10000, rmc.lat.scale);
+    TEST_ASSERT_EQUAL(1451226, rmc.lon.num);
+    TEST_ASSERT_EQUAL(10000, rmc.lon.scale);
     /* 999,99 knots is equal to 1851,981 kmh/h */
     TEST_ASSERT_EQUAL(185198, rmc.speed_kmh.num);
     TEST_ASSERT_EQUAL(100, rmc.speed_kmh.scale);
@@ -195,10 +205,10 @@ TEST(NMEA, ParseGga)
     TEST_ASSERT_EQUAL(9, gga.fix_time.hour);
     TEST_ASSERT_EQUAL(27, gga.fix_time.minute);
     TEST_ASSERT_EQUAL(50, gga.fix_time.second);
-    TEST_ASSERT_EQUAL(53216802, gga.lat.num);
-    TEST_ASSERT_EQUAL(10000, gga.lat.scale);
-    TEST_ASSERT_EQUAL(-6303372, gga.lon.num);
-    TEST_ASSERT_EQUAL(10000, gga.lon.scale);
+    TEST_ASSERT_EQUAL(53361336, gga.lat.num);
+    TEST_ASSERT_EQUAL(1000000, gga.lat.scale);
+    TEST_ASSERT_EQUAL(-6505620, gga.lon.num);
+    TEST_ASSERT_EQUAL(1000000, gga.lon.scale);
     TEST_ASSERT_EQUAL(1, gga.quality);
     TEST_ASSERT_EQUAL(8, gga.satellites);
     TEST_ASSERT_EQUAL(103, gga.hdop.num);
@@ -221,19 +231,6 @@ TEST(NMEA, GetSentenceType)
         "$GPFOO,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,"));
 }
 
-TEST(NMEA, Float2Coord)
-{
-    nmea_float_t f;
-    nmea_coord_t coord;
-
-    f.num = -53216802;
-    f.scale = 10000;
-    Nmea_Float2Coord(&f, &coord);
-    TEST_ASSERT_EQUAL(-53, coord.deg);
-    TEST_ASSERT_EQUAL(21, coord.min);
-    TEST_ASSERT_EQUAL(6802, coord.frac);
-}
-
 TEST(NMEA, AddChar)
 {
     char buf[] = "$foobar,444,123,*32";
@@ -252,13 +249,13 @@ TEST_GROUP_RUNNER(NMEA)
 {
     RUN_TEST_CASE(NMEA, Hex2Dec);
     RUN_TEST_CASE(NMEA, Str2Dec);
+    RUN_TEST_CASE(NMEA, Float2Decdeg);
     RUN_TEST_CASE(NMEA, Scan);
     RUN_TEST_CASE(NMEA, VerifyChecksum);
     RUN_TEST_CASE(NMEA, VerifyMsg);
     RUN_TEST_CASE(NMEA, ParseRmc);
     RUN_TEST_CASE(NMEA, ParseGga);
     RUN_TEST_CASE(NMEA, GetSentenceType);
-    RUN_TEST_CASE(NMEA, Float2Coord);
     RUN_TEST_CASE(NMEA, AddChar);
 }
 
