@@ -29,6 +29,11 @@
 /** Size of the external flash in bytes */
 #define STORAGE_SIZE 4000000U
 
+/** USB manufacturer string */
+#define USBD_MANUFACTURE_STR "Deadbadger.cz"
+/** USB device name */
+#define USBD_DEVICE_STR "GLogger"
+
 #endif
 
 /** @} */

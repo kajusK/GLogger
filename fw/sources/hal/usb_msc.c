@@ -30,6 +30,26 @@
 
 #include "hal/usb_msc.h"
 
+#ifndef USBD_VENDOR
+    #define USBD_VENDOR 0x0483 /* STMicroelectronics */
+#endif
+
+#ifndef USBD_PRODUCT
+    #define USBD_PRODUCT 0x5720 /* Mass storage device */
+#endif
+
+#ifndef USBD_MANUFACTURE_STR
+    #define USBD_MANUFACTURE_STR "Deadbadger"
+#endif
+
+#ifndef USBD_DEVICE_STR
+    #define USBD_DEVICE_STR "Device"
+#endif
+
+#ifndef USBD_VERSION_STR
+    #define USBD_VERSION_STR "0000"
+#endif
+
 /** Device descriptor - https://www.keil.com/pack/doc/mw/USB/html/_u_s_b__device__descriptor.html */
 static const struct usb_device_descriptor usb_dev_descr = {
     .bLength = USB_DT_DEVICE_SIZE,
@@ -39,8 +59,8 @@ static const struct usb_device_descriptor usb_dev_descr = {
     .bDeviceSubClass = 0,
     .bDeviceProtocol = 0,
     .bMaxPacketSize0 = 64,
-    .idVendor = 0x0483, /* STMicroelectronics */
-    .idProduct = 0x5720, /* Mass storage device */
+    .idVendor = USBD_VENDOR,
+    .idProduct = USBD_PRODUCT,
     .bcdDevice = 0x0001,
     .iManufacturer = 1,
     .iProduct = 2,
@@ -50,9 +70,9 @@ static const struct usb_device_descriptor usb_dev_descr = {
 
 /** USB strings descriptors, order in usb_dev_descr - iManufacturer,... */
 static const char *usb_strings[] = {
-    "Deadbadger",
-    "GLogger",
-    "0000",
+     USBD_MANUFACTURE_STR,
+     USBD_DEVICE_STR,
+     USBD_VERSION_STR,
 };
 
 /** https://www.keil.com/pack/doc/mw/USB/html/_u_s_b__endpoint__descriptor.html */
@@ -121,12 +141,12 @@ void Usbd_MscInit(uint32_t blocks, usb_read_block_t read,
         usb_write_block_t write)
 {
     rcc_periph_clock_enable(RCC_USB);
-    usb_msc_dev = usbd_init(&st_usbfs_v1_usb_driver, &usb_dev_descr,
+    usb_msc_dev = usbd_init(&st_usbfs_v2_usb_driver, &usb_dev_descr,
                 &usb_config_descr, usb_strings, 3,
                 usb_control_buffer, sizeof(usb_control_buffer));
 
-    usb_msc_init(usb_msc_dev, 0x82, 64, 0x01, 64, "Deadbadg", "GLogger",
-        "0.00", blocks, read, write);
+    usb_msc_init(usb_msc_dev, 0x82, 64, 0x01, 64, USBD_MANUFACTURE_STR,
+            USBD_DEVICE_STR, USBD_VERSION_STR, blocks, read, write);
 }
 
 /** @} */

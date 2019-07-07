@@ -27,7 +27,20 @@
 #define __HAL_USB_MSC_H
 
 #include <types.h>
+#include "app/config.h"
 
+/* Default values that can be overridden
+#define USBD_VENDOR 0x0483
+#define USBD_PRODUCT 0x5720
+#define USBD_MANUFACTURE_STR "Deadbadger"
+#define USBD_DEVICE_STR "Device"
+#define USBD_VERSION_STR "0000"
+*/
+
+/**
+ * @param lba - Logical block address - 1 = 512, 2 = 1024,...
+ * @param buf - Destination buffer to copy 512 bytes to
+ */
 typedef int (*usb_read_block_t)(uint32_t lba, uint8_t *buf);
 typedef int (*usb_write_block_t)(uint32_t lba, const uint8_t *buf);
 
