@@ -88,12 +88,20 @@ TEST(MATH, sqrt)
     TEST_ASSERT_EQUAL(1234, int_sqrt(1522756));
 }
 
+TEST(MATH, ceil_div)
+{
+    TEST_ASSERT_EQUAL(10, ceil_div(100, 11));
+    TEST_ASSERT_EQUAL(4, ceil_div(1234, 341));
+    TEST_ASSERT_EQUAL(24, ceil_div(120, 5));
+}
+
 TEST_GROUP_RUNNER(MATH)
 {
     RUN_TEST_CASE(MATH, sin);
     RUN_TEST_CASE(MATH, cos);
     RUN_TEST_CASE(MATH, tan);
     RUN_TEST_CASE(MATH, sqrt);
+    RUN_TEST_CASE(MATH, ceil_div);
 }
 
 void Math_RunTests(void)

@@ -29,6 +29,15 @@
 #include <types.h>
 
 /**
+ * Divide number and return smallest integer greater or equal to result
+ *
+ * @param num   Number to be divided
+ * @param div   Divisor
+ * @return Result of ceil(num/div)
+ */
+#define ceil_div(num, div) (((num) + (div) - 1)/(div))
+
+/**
  * Calculate sin function
  *
  * @param mdeg  angle in thousands of a degree
