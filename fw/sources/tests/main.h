@@ -34,6 +34,7 @@ extern void Nmea_RunTests(void);
 extern void Ringbuf_RunTests(void);
 extern void Math_RunTests(void);
 extern void Nav_RunTests(void);
+extern void Ramdisk_RunTests(void);
 
 extern uint8_t assert_should_fail;
 

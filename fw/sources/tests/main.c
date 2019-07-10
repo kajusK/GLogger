@@ -34,6 +34,7 @@ static void RunAll(void)
     Ringbuf_RunTests();
     Math_RunTests();
     Nav_RunTests();
+    Ramdisk_RunTests();
 }
 
 int main(int argc, const char *argv[])
