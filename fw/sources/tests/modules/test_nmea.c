@@ -23,6 +23,8 @@
  * @{
  */
 
+#include <string.h>
+#include <ctype.h>
 #include <main.h>
 #include "modules/nmea.c"
 

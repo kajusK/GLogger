@@ -23,8 +23,8 @@
  * @{
  */
 
-#include <main.h>
 #include <string.h>
+#include <main.h>
 #include "utils/ringbuf.c"
 
 static char buf[4];
