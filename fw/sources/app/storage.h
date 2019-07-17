@@ -39,6 +39,14 @@ typedef struct {
 } __attribute__((packed)) storage_item_t;
 
 /**
+ * Check if given item is end of log mark
+ *
+ * @param item  Item to be checked
+ * @return true if EOL
+ */
+extern bool Storage_IsEOL(const storage_item_t *item);
+
+/**
  * Erase all records in the memory
  */
 extern void Storage_Erase(void);
@@ -75,14 +83,16 @@ extern bool Storage_Add(const gps_info_t *info);
 /**
  * Read one record from memory
  *
+ * Item with all fields equal to 0 is considered end of current log
+ *
  * @param id        Record id (sequence number, from 0)
  * @param item      Item to store result to
- * @return  False if item od given id does not exist
+ * @return  False if item of given id does not exist
  */
 extern bool Storage_Get(uint32_t id, storage_item_t *item);
 
 /**
- * Check the content of the flash, find last record
+ * Check the content of the flash, find last record, add end of log mark
  */
 extern void Storage_Init(void);
 

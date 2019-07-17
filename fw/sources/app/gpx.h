@@ -16,31 +16,28 @@
  */
 
 /**
- * @file    main.h
- * @brief   Main file for unit tests
+ * @file    app/gpx.h
+ * @brief   GPX file generator
  *
- * @addtogroup tests
+ * @addtogroup app
  * @{
  */
 
-#include "main.h"
+#ifndef __APP_GPX_H_
+#define __APP_GPX_H_
 
-uint8_t assert_should_fail = false;
+#include <types.h>
 
-static void RunAll(void)
-{
-    Time_RunTests();
-    Nmea_RunTests();
-    Ringbuf_RunTests();
-    Math_RunTests();
-    Nav_RunTests();
-    Ramdisk_RunTests();
-    Gpx_RunTests();
-}
+/**
+ * Get size of gpx file
+ *
+ * @return Size in bytes
+ */
+extern uint32_t GPX_GetSize(void);
 
-int main(int argc, const char *argv[])
-{
-    UnityMain(argc, argv, RunAll);
-}
+extern bool GPX_Get(uint32_t offset, uint8_t *buf, uint32_t len);
+
+#endif
 
 /** @} */
+

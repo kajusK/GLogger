@@ -35,6 +35,7 @@ extern void Ringbuf_RunTests(void);
 extern void Math_RunTests(void);
 extern void Nav_RunTests(void);
 extern void Ramdisk_RunTests(void);
+extern void Gpx_RunTests(void);
 
 extern uint8_t assert_should_fail;
 
@@ -44,7 +45,7 @@ extern uint8_t assert_should_fail;
 /*    _Pragma("GCC diagnostic warning \"-w\"") */ \
     if (assert_should_fail) { \
         TEST_ASSERT_FALSE(exp); \
-        return; \
+         \
     } else { \
         TEST_ASSERT_TRUE(exp); \
     } \

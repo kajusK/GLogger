@@ -23,9 +23,10 @@
  * @{
  */
 
+#include <string.h>
+
 #include "drivers/spi_flash.h"
 #include "app/config.h"
-
 #include "app/storage.h"
 
 static uint32_t storagei_offset = 0;
@@ -36,12 +37,30 @@ static uint32_t storagei_offset = 0;
  * @param item      Item to be checked
  * @return true if empty
  */
-static bool Storagei_ItemEmpty(storage_item_t *item)
+static bool Storagei_ItemEmpty(const storage_item_t *item)
 {
-    uint8_t *pos = (uint8_t *) item;
+    const uint8_t *pos = (uint8_t *) item;
 
     for (size_t i = 0; i < sizeof(storage_item_t); i++) {
         if (*pos++ != 0xff) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Check if item on selected offset is end of log mark
+ *
+ * @param item  Item to be checked
+ * @return true if EOL
+ */
+bool Storage_IsEOL(const storage_item_t *item)
+{
+    const uint8_t *pos = (uint8_t *) item;
+
+    for (size_t i = 0; i < sizeof(storage_item_t); i++) {
+        if (*pos++ != 0x00) {
             return false;
         }
     }
@@ -112,6 +131,15 @@ void Storage_Init(void)
             break;
         }
         storagei_offset += item_size;
+    }
+    /* Add new invalid item - end of log record */
+    if (storagei_offset != 0) {
+        SpiFlash_Read(storagei_offset - item_size, buf, item_size);
+        if (!Storage_IsEOL((storage_item_t *) buf)) {
+            memset(buf, 0x00, item_size);
+            SpiFlash_Write(storagei_offset, buf, item_size);
+            storagei_offset += item_size;
+        }
     }
 }
 
