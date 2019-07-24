@@ -140,11 +140,34 @@ extern bool Cgui_Putc(uint16_t x, uint16_t y, char c);
 extern void Cgui_Puts(uint16_t x, uint16_t y, const char *msg);
 
 /**
+ * Printf like function (newline supported)
+ *
+ * @param px    Upper left corner of string beginning
+ * @param py    Upper left corner of string beginning
+ * @param fmt   String formatter in printf format, only %c,d,s supported
+ */
+extern void Cgui_Printf(uint16_t px, uint16_t py, const char *fmt, ...);
+
+/**
  * Set font to be used
  *
  * @param font      Font data
  */
 extern void Cgui_SetFont(const cgui_font_t *font);
+
+/**
+ * Get height of currently used font
+ *
+ * @return height in px
+ */
+extern uint16_t Cgui_GetFontHeight(void);
+
+/**
+ * Get width of currently used font
+ *
+ * @return width in px
+ */
+extern uint16_t Cgui_GetFontWidth(void);
 
 /**
  * Initialize cgui

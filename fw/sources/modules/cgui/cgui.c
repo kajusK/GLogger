@@ -23,10 +23,56 @@
  * @{
  */
 
+#include <stdarg.h>
+#include <string.h>
+
 #include "cgui.h"
 #include "fonts.h"
 
 static cgui_display_t cguii_disp;
+
+/**
+ * Convert number to string and print it out
+ *
+ * @param px    Upper left corner of string beginning
+ * @param py    Upper left corner of string beginning
+ * @param num   Number to be printed
+ * @return      Amount of characters printed
+ */
+static uint8_t Cgui_PrintNum(uint16_t x, uint16_t y, int num)
+{
+    char buf[16];
+    uint8_t chars = 0;
+    bool negative = false;
+
+    if (num == 0) {
+        Cgui_Putc(x, y, '0');
+        return 1;
+    }
+
+    if (num < 0) {
+        negative = true;
+        Cgui_Putc(x, y, '-');
+        x += Cgui_GetFontWidth();
+        num = -num;
+    }
+
+    while (num != 0  && chars < sizeof(buf)) {
+        buf[chars++] = '0' + (num % 10);
+        num /= 10;
+    }
+
+    for (int i = chars - 1; i >= 0; i--) {
+        Cgui_Putc(x, y, buf[i]);
+        x += Cgui_GetFontWidth();
+    }
+
+    if (negative) {
+        chars += 1;
+    }
+    return chars;
+}
+
 
 void Cgui_FillScreen(bool value)
 {
@@ -118,9 +164,9 @@ void Cgui_DrawImage(uint16_t pos_x, uint16_t pos_y, cgui_img_t *img)
     for (y = pos_y; y < pos_y + img->height; y++) {
         for (x = pos_x; x < pos_x + img->width; x++) {
             if ((img->img[offset] >> rot) & 0x01) {
-                cguii_disp.draw(x, y, true);
-            } else if (!img->transparent) {
                 cguii_disp.draw(x, y, false);
+            } else if (!img->transparent) {
+                cguii_disp.draw(x, y, true);
             }
 
             rot++;
@@ -129,7 +175,6 @@ void Cgui_DrawImage(uint16_t pos_x, uint16_t pos_y, cgui_img_t *img)
                 offset += 1;
             }
         }
-        y++;
     }
 }
 
@@ -151,7 +196,7 @@ bool Cgui_Putc(uint16_t x, uint16_t y, char c)
     }
 
     index = (c - cguii_disp.font->start_id)*
-            cguii_disp.font->width*cguii_disp.font->height/8;
+            (cguii_disp.font->width*cguii_disp.font->height/8 + 1);
 
     img.img = &cguii_disp.font->chars[index];
     img.width = cguii_disp.font->width;
@@ -176,9 +221,77 @@ void Cgui_Puts(uint16_t x, uint16_t y, const char *msg)
     }
 }
 
+void Cgui_Printf(uint16_t px, uint16_t py, const char *fmt, ...)
+{
+    char c;
+    const char *str;
+    uint8_t chars;
+    bool inType = false;
+    uint16_t x = px;
+    uint16_t y = py;
+
+    va_list ap;
+    va_start(ap, fmt);
+
+    while ((c = *fmt++) != '\0') {
+        if (c == '%') {
+            if (!inType) {
+                inType = true;
+                continue;
+            }
+        }
+
+        if (!inType) {
+            if (c == '\n') {
+                y += Cgui_GetFontHeight();
+                x = px;
+                continue;
+            }
+            Cgui_Putc(x, y, c);
+            x += Cgui_GetFontWidth();
+            continue;
+        }
+
+        inType = false;
+        switch (c) {
+            case '%':
+                Cgui_Putc(x, y, '%');
+                x += Cgui_GetFontWidth();
+                break;
+            case 'c':
+                Cgui_Putc(x, y, va_arg(ap, int));
+                x += Cgui_GetFontWidth();
+                break;
+            case 's':
+                str = va_arg(ap, const char *);
+                Cgui_Puts(x, y, str);
+                x += strlen(str)*Cgui_GetFontWidth();
+                break;
+            case 'd':
+                chars = Cgui_PrintNum(x, y, va_arg(ap, int));
+                x += chars*Cgui_GetFontWidth();
+                break;
+            default:
+                break;
+        }
+    }
+
+    va_end(ap);
+}
+
 void Cgui_SetFont(const cgui_font_t *font)
 {
     cguii_disp.font = font;
+}
+
+uint16_t Cgui_GetFontHeight(void)
+{
+    return cguii_disp.font->height;
+}
+
+uint16_t Cgui_GetFontWidth(void)
+{
+    return cguii_disp.font->width;
 }
 
 void Cgui_Init(cgui_draw_pixel_t draw, uint16_t width,
