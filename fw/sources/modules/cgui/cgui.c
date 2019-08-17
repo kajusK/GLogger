@@ -246,6 +246,11 @@ void Cgui_Printf(uint16_t px, uint16_t py, const char *fmt, ...)
                 y += Cgui_GetFontHeight();
                 x = px;
                 continue;
+            } else if (c == '\t') {
+                Cgui_Putc(x, y, ' ');
+                Cgui_Putc(x, y, ' ');
+                x += Cgui_GetFontWidth()*2;
+                continue;
             }
             Cgui_Putc(x, y, c);
             x += Cgui_GetFontWidth();
