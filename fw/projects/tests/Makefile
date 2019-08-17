@@ -20,7 +20,7 @@ INCLUDES	= \
 	-I $(SOURCES) \
 	-I $(SOURCES)/tests \
 	-I $(UNITY_DIR)/src \
-	-I $(UNITY_DIR)/extras/fixture/src 
+	-I $(UNITY_DIR)/extras/fixture/src
 BUILD_FLAGS	= -fprofile-arcs -ftest-coverage
 DEFS		= -DUNITY_FLOAT_VERBOSE
 
@@ -98,7 +98,7 @@ coverage: tests
 	gcovr --html --html-details -o coverage/index.html -s -u -r "." -e ".*/tests/.*" -e ".*/external/.*"
 
 clean:
-	$(RM) -r $(OBJDIR) $(TARGET) coverage
+	$(RM) -r $(OBJDIR) $(TARGET) coverage *.pbm ramdisk.img
 
 .PHONY : clean all
 

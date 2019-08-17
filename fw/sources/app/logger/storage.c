@@ -26,8 +26,8 @@
 #include <string.h>
 
 #include "drivers/spi_flash.h"
-#include "app/config.h"
-#include "app/storage.h"
+#include "config.h"
+#include "storage.h"
 
 static uint32_t storagei_offset = 0;
 

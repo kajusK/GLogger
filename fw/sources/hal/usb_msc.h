@@ -27,7 +27,7 @@
 #define __HAL_USB_MSC_H
 
 #include <types.h>
-#include "app/config.h"
+#include "config.h"
 
 /* Default values that can be overridden
 #define USBD_VENDOR 0x0483

@@ -16,10 +16,10 @@
  */
 
 /**
- * @file    drivers/gps.h
- * @brief   Driver for gps receiver (sleep/wake up implemented for SIM28)
+ * @file    app/stats.h
+ * @brief   Stats from the logs - distance travelled, etc.
  *
- * @addtogroup drivers
+ * @addtogroup app
  * @{
  */
 

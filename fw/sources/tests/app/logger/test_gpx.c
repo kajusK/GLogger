@@ -27,7 +27,7 @@
 #include <time.h>
 #include <string.h>
 #include <main.h>
-#include "app/gpx.c"
+#include "app/logger/gpx.c"
 
 /* *****************************************************************************
  * Mocks

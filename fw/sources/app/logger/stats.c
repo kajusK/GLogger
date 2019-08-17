@@ -25,7 +25,7 @@
 
 #include <string.h>
 
-#include "app/storage.h"
+#include "storage.h"
 #include "utils/nav.h"
 #include "stats.h"
 

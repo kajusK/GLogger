@@ -27,8 +27,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "app/storage.h"
-#include "app/gpx.h"
+#include "storage.h"
+#include "gpx.h"
 
 #define GPX_ITEM_SIZE 130
 
