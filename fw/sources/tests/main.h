@@ -31,11 +31,13 @@
 
 extern void Time_RunTests(void);
 extern void Nmea_RunTests(void);
+extern void Crc_RunTests(void);
 extern void Ringbuf_RunTests(void);
 extern void Math_RunTests(void);
 extern void Nav_RunTests(void);
 extern void Ramdisk_RunTests(void);
 extern void Gpx_RunTests(void);
+extern void Gui_RunTests(void);
 
 extern uint8_t assert_should_fail;
 

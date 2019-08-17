@@ -16,33 +16,21 @@
  */
 
 /**
- * @file    main.h
- * @brief   Main file for unit tests
+ * @file    app/gui.h
+ * @brief   Graphical interface for user
  *
- * @addtogroup tests
+ * @addtogroup app
  * @{
  */
 
-#include "main.h"
+#ifndef __APP_GUI_H_
+#define __APP_GUI_H_
 
-uint8_t assert_should_fail = false;
+#include <types.h>
+#include "drivers/gps.h"
 
-static void RunAll(void)
-{
-    Time_RunTests();
-    Nmea_RunTests();
-    Crc_RunTests();
-    Ringbuf_RunTests();
-    Math_RunTests();
-    Nav_RunTests();
-    Ramdisk_RunTests();
-    Gpx_RunTests();
-    Gui_RunTests();
-}
 
-int main(int argc, const char *argv[])
-{
-    UnityMain(argc, argv, RunAll);
-}
+#endif
 
 /** @} */
+
