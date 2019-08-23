@@ -14,7 +14,7 @@ FILES = $(wildcard $(SOURCES)/app/$(PROJECT)/*.c) \
 # strip sources path from files to build to allow building when sources contains ..
 CFILES = $(subst $(SOURCES)/, , $(FILES))
 
-DEVICE=stm32f042f6p6
+DEVICE=stm32f070cbt6
 
 CFLAGS += -Wall -Wextra -Wstrict-prototypes -Wundef -Wshadow -Wredundant-decls
 CFLAGS += -Wmissing-prototypes -pedantic --specs=nano.specs --specs=nosys.specs

@@ -53,7 +53,7 @@
 /** PAL_LINE for chibios format of line define */
 #define PAL_LINE(a, b)  a, b
 
-#include "app/board_gpio.h"
+#include "board_gpio.h"
 
 /**
  * Set pin output
