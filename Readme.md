@@ -30,7 +30,7 @@ Hardware
  * Micro USB for communication with PC
  * OLED display and 2 buttons for user interaction
 
-![pcb]("img/pcb.png")
+![pcb](img/pcb.png)
 
 Software
 ========
