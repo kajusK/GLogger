@@ -75,14 +75,14 @@ static enum rcc_periph_clken SPIdi_GetRcc(uint8_t device)
 
 uint8_t SPId_Transceive(uint8_t device, uint8_t data)
 {
-	uint8_t spi = SPIdi_GetDevice(device);
+	uint32_t spi = SPIdi_GetDevice(device);
 
 	return (uint8_t) spi_xfer(spi, data);
 }
 
 void SPId_Send(uint8_t device, const uint8_t *buf, size_t len)
 {
-	uint8_t spi = SPIdi_GetDevice(device);
+	uint32_t spi = SPIdi_GetDevice(device);
 
 	while (len-- != 0) {
 		spi_xfer(spi, *buf++);
@@ -91,7 +91,7 @@ void SPId_Send(uint8_t device, const uint8_t *buf, size_t len)
 
 void SPId_Receive(uint8_t device, uint8_t *buf, size_t len)
 {
-	uint8_t spi = SPIdi_GetDevice(device);
+	uint32_t spi = SPIdi_GetDevice(device);
 
 	while (len-- != 0) {
 		*buf++ = spi_xfer(spi, 0xff);
@@ -130,9 +130,9 @@ void SPId_Init(uint8_t device, spid_prescaler_t prescaler, spid_mode_t mode)
 	spi_set_full_duplex_mode(spi);
 	spi_set_unidirectional_mode(spi);
 	spi_set_data_size(spi, SPI_CR2_DS_8BIT);
-	spi_enable_software_slave_management(spi);
+	//spi_enable_software_slave_management(spi);
 	spi_send_msb_first(spi);
-	spi_set_nss_high(spi);
+	//spi_set_nss_high(spi);
 	spi_fifo_reception_threshold_8bit(spi);
 	SPI_I2SCFGR(spi) &= ~SPI_I2SCFGR_I2SMOD;
 	spi_enable(spi);
