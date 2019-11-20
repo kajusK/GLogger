@@ -79,7 +79,6 @@ bool I2Cd_Transceive(uint8_t device, uint8_t address, const uint8_t *txbuf,
     uint32_t i2c = I2Cdi_GetDevice(device);
 
     /** modified code from libopencm3 library - infinite loop on nack, wtf?? */
-    /*  waiting for busy is unnecessary. read the RM */
     if (txlen) {
         i2c_set_7bit_address(i2c, address);
         i2c_set_write_transfer_dir(i2c);
@@ -103,10 +102,8 @@ bool I2Cd_Transceive(uint8_t device, uint8_t address, const uint8_t *txbuf,
             }
             i2c_send_data(i2c, *txbuf++);
         }
-        /* not entirely sure this is really necessary.
-         * RM implies it will stall until it can write out the later bits
-         */
         if (rxlen) {
+            /* Wait until last byte was send before sending start again */
             while (!i2c_transfer_complete(i2c)) {
             	;
             }
@@ -124,7 +121,7 @@ bool I2Cd_Transceive(uint8_t device, uint8_t address, const uint8_t *txbuf,
         i2c_enable_autoend(i2c);
 
         for (size_t i = 0; i < rxlen; i++) {
-            while (i2c_received_data(i2c) == 0) {
+            while (!i2c_received_data(i2c)) {
             	;
             }
             rxbuf[i] = i2c_get_data(i2c);
@@ -138,8 +135,8 @@ void I2Cd_Init(uint8_t device, bool fast)
 	enum rcc_periph_clken rcc = I2Cdi_GetRcc(device);
 	uint32_t i2c = I2Cdi_GetDevice(device);
 
-    rcc_periph_clock_enable(rcc);
     rcc_set_i2c_clock_hsi(i2c);
+    rcc_periph_clock_enable(rcc);
 
     i2c_reset(i2c);
     i2c_peripheral_disable(i2c);
