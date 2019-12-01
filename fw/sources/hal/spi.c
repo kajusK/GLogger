@@ -73,11 +73,28 @@ static enum rcc_periph_clken SPIdi_GetRcc(uint8_t device)
 	return spidi_rcc[device - 1];
 }
 
+/**
+ * 8 bit version of spi_xfer as on f0, writing to SPI_DR causes spi to send 16
+ * bits instead of 8
+ *
+ * @param spi   Address of the spi peripheral
+ * @param data  Data to be sent
+ * @return data received
+ */
+static uint8_t SPId_Xfer8(uint32_t spi, uint8_t data)
+{
+    SPI_DR8(spi) = data;
+    while (SPI_SR(spi) & SPI_SR_BSY) {
+        ;
+    }
+    return SPI_DR8(spi);
+}
+
 uint8_t SPId_Transceive(uint8_t device, uint8_t data)
 {
 	uint32_t spi = SPIdi_GetDevice(device);
 
-	return (uint8_t) spi_xfer(spi, data);
+	return SPId_Xfer8(spi, data);
 }
 
 void SPId_Send(uint8_t device, const uint8_t *buf, size_t len)
@@ -85,7 +102,7 @@ void SPId_Send(uint8_t device, const uint8_t *buf, size_t len)
 	uint32_t spi = SPIdi_GetDevice(device);
 
 	while (len-- != 0) {
-		spi_xfer(spi, *buf++);
+		SPId_Xfer8(spi, *buf++);
 	}
 }
 
@@ -94,7 +111,7 @@ void SPId_Receive(uint8_t device, uint8_t *buf, size_t len)
 	uint32_t spi = SPIdi_GetDevice(device);
 
 	while (len-- != 0) {
-		*buf++ = spi_xfer(spi, 0xff);
+		*buf++ = SPId_Xfer8(spi, 0xff);
 	}
 }
 
@@ -104,6 +121,7 @@ void SPId_Init(uint8_t device, spid_prescaler_t prescaler, spid_mode_t mode)
 	uint32_t spi = SPIdi_GetDevice(device);
 
 	rcc_periph_clock_enable(rcc);
+	spi_reset(spi);
 
 	spi_set_master_mode(spi);
 	spi_set_baudrate_prescaler(spi, prescaler);
@@ -130,11 +148,14 @@ void SPId_Init(uint8_t device, spid_prescaler_t prescaler, spid_mode_t mode)
 	spi_set_full_duplex_mode(spi);
 	spi_set_unidirectional_mode(spi);
 	spi_set_data_size(spi, SPI_CR2_DS_8BIT);
-	//spi_enable_software_slave_management(spi);
 	spi_send_msb_first(spi);
-	//spi_set_nss_high(spi);
 	spi_fifo_reception_threshold_8bit(spi);
-	SPI_I2SCFGR(spi) &= ~SPI_I2SCFGR_I2SMOD;
+
+	/* CS controlled manually, but this should be set anyway */
+	spi_enable_software_slave_management(spi);
+	spi_enable_ss_output(spi);
+	spi_set_nss_high(spi);
+
 	spi_enable(spi);
 }
 

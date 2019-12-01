@@ -24,6 +24,7 @@
  */
 
 #include "utils/assert.h"
+#include "utils/time.h"
 #include "hal/io.h"
 #include "hal/spi.h"
 
@@ -31,27 +32,19 @@
 
 #define SPI_DEVICE 1
 #define PAGE_BYTES 256
+#define CHIP_ERASE_TIME_MS 40
+#define PAGE_ERASE_TIME_MS 20
+#define WRITE_PAGE_TIME_MS 2
 
 /** status register */
-typedef struct {
-    uint8_t res: 2;
-    uint8_t sec: 1;     /** Security ID status, 1 = locked */
-    uint8_t wpld: 1;    /** Write protection lock down, 1 = enabled */
-    uint8_t wsp: 1;     /** Write suspend-program status, 1 = suspended */
-    uint8_t wse: 1;     /** Write suspend-erase status, 1 = suspended */
-    uint8_t wel: 1;     /** Write enable latch status, 1 = write-enabled */
-    uint8_t busy: 1;    /** Write operation status, 1 = write in progress */
-} spiflash_status_t;
-
-/** configuration register */
-typedef struct {
-    uint8_t wpen: 1;    /** Write-Protect pin enable, 1 = enabled */
-    uint8_t res: 3;
-    uint8_t bpnv: 1;    /** Block protection volatility state, 1 no block locked */
-    uint8_t res2: 1;
-    uint8_t ioc: 1;     /** IO config in SPI, 1 = WP and HOLD pins disabled */
-    uint8_t res3: 1;
-} spiflash_config_t;
+enum {
+    STATUS_SEC = 0x04,  /** Security ID status, 1 = locked */
+    STATUS_WPLD = 0x08, /** Write protection lock down, 1 = enabled */
+    STATUS_WSP = 0x10,  /** Write suspend-program status, 1 = suspended */
+    STATUS_WSE = 0x20,  /** Write suspend-erase status, 1 = suspended */
+    STATUS_WEL = 0x40,  /** Write enable latch status, 1 = write-enabled */
+    STATUS_BUSY = 0x80, /** Write operation status, 1 = write in progress */
+};
 
 /** Flash memory commands */
 typedef enum {
@@ -62,24 +55,16 @@ typedef enum {
     CMD_EQIO = 0x38,    /** enable quad io */
     CMD_RSTQIO = 0xff,  /** reset quad io */
     CMD_RDSR = 0x05,    /** read status reg */
-    CMD_WRSR = 0x01,    /** write status reg */
-    CMD_RDCR = 0x35,    /** read configuration reg */
 
     /* read */
     CMD_READ = 0x03,    /** read memory */
     CMD_HSREAD = 0x0b,  /** High speed read */
-    CMD_SQOR = 0x6b,    /** QSPI output read */
-    CMD_SQIOR = 0xeb,   /** QSPI io read */
-    CMD_SDOR = 0x3b,    /** dual spi output read */
-    CMD_SDIOR = 0xbb,   /** dual spi io read */
     CMD_SB = 0xc0,      /** set burst length */
     CMD_RBSQI = 0x0c,   /** SQI read burst with wrap */
-    CMD_RBSPI = 0xec,   /** SPI read burst with wrap */
 
     /* Identification */
     CMD_JEDEC = 0x9f,   /** read jedec id */
     CMD_QJID = 0xaf,    /** read quad IO J-ID */
-    CMD_SFDP = 0x5a,    /** serial flash discoverable params */
 
     /* write */
     CMD_WREN = 0x06,    /** write enable */
@@ -88,16 +73,13 @@ typedef enum {
     CMD_BE = 0xd8,      /** Erase 64,32 or 8 k memory */
     CMD_CE = 0xc7,      /** Erase full array */
     CMD_PP = 0x02,      /** Page program */
-    CMD_SQPP = 0x32,    /** QSPI page program */
     CMD_WRSU = 0xb0,    /** Suspend program/erase */
     CMD_WRRE = 0x30,    /** Resume program/erase */
 
     /* protection */
-    CMD_RBPR = 0x71,    /** Read block protection reg */
+    CMD_RBPR = 0x72,    /** Read block protection reg */
     CMD_WBPR = 0x42,    /** Write block protection reg */
     CMD_LBPR = 0x8d,    /** Lock down block protection reg */
-    CMD_NVWLDR = 0xe8,  /** Non volatile write lockdown reg */
-    CMD_ULBPR = 0x98,   /** Global block protection unlock */
     CMD_RSID = 0x88,    /** Read security ID */
     CMD_PSID = 0xa5,    /** Program user security ID */
     CMD_LSID = 0x85,    /** Lock out security Id programming */
@@ -129,8 +111,8 @@ static void SpiFlashi_CmdWithAddr(spiflash_cmd_t cmd, uint32_t addr,
     ASSERT_NOT(dummy > 4);
 
     data[0] = cmd;
-    data[1] = addr >> 2;
-    data[2] = addr >> 1;
+    data[1] = addr >> 16;
+    data[2] = addr >> 8;
     data[3] = addr;
 
     SpiFlashi_Cs(true);
@@ -141,6 +123,11 @@ static void SpiFlashi_CmdWithAddr(spiflash_cmd_t cmd, uint32_t addr,
     }
 }
 
+/**
+ * Send Flash command without any additional parameters
+ *
+ * @param cmd   Command to be executed
+ */
 static void SpiFlashi_Cmd(spiflash_cmd_t cmd)
 {
     SpiFlashi_Cs(true);
@@ -148,16 +135,56 @@ static void SpiFlashi_Cmd(spiflash_cmd_t cmd)
     SpiFlashi_Cs(false);
 }
 
-void SpiFlash_WriteEnable(void)
+/**
+ * Wait for flash operation to finish
+ *
+ * @param timeout_ms    Time to wait for op to finish
+ */
+static void SpiFlashi_WaitReady(uint32_t timeout_ms)
+{
+    const uint8_t cmd = CMD_RDSR;
+    uint32_t start = millis();
+
+    SpiFlashi_Cs(true);
+    SPId_Send(SPI_DEVICE, &cmd, 1);
+
+    while ((millis() - start) < timeout_ms) {
+        /* continuously read status register, command send only once */
+        if ((SPId_Transceive(SPI_DEVICE, 0xff) & STATUS_BUSY) == 0) {
+            break;
+        }
+    }
+
+    SpiFlashi_Cs(false);
+}
+
+/**
+ * Enable write protection
+ */
+static void SpiFlashi_WriteEnable(void)
 {
     SpiFlashi_Cmd(CMD_WREN);
 }
 
-void SpiFlash_WriteDisable(void)
+/**
+ * Disable write protection
+ */
+static void SpiFlashi_WriteDisable(void)
 {
     SpiFlashi_Cmd(CMD_WRDI);
 }
 
+void SpiFlash_WriteUnlock(void)
+{
+    uint8_t buf[11] = {0};
+    buf[0] = CMD_WBPR;
+
+    SpiFlashi_WriteEnable();
+    SpiFlashi_Cs(true);
+    SPId_Send(SPI_DEVICE, buf, sizeof(buf));
+    SpiFlashi_Cs(false);
+    SpiFlashi_WriteDisable();
+}
 
 void SpiFlash_Read(uint32_t addr, uint8_t *buf, size_t len)
 {
@@ -178,24 +205,33 @@ void SpiFlash_Write(uint32_t addr, const uint8_t *buf, size_t len)
         } else {
             bytes = len;
         }
+        SpiFlashi_WriteEnable();
         SpiFlashi_CmdWithAddr(CMD_PP, addr, 0, false);
         SPId_Send(SPI_DEVICE, buf, bytes);
         SpiFlashi_Cs(false);
+        SpiFlashi_WaitReady(WRITE_PAGE_TIME_MS);
 
         buf += bytes;
         addr += bytes;
         len -= bytes;
     }
+    SpiFlashi_WriteDisable();
 }
 
 void SpiFlash_Erase(void)
 {
+    SpiFlashi_WriteEnable();
     SpiFlashi_Cmd(CMD_CE);
+    SpiFlashi_WaitReady(CHIP_ERASE_TIME_MS);
+    SpiFlashi_WriteDisable();
 }
 
 void SpiFlash_EraseSector(uint32_t addr)
 {
+    SpiFlashi_WriteEnable();
     SpiFlashi_CmdWithAddr(CMD_SE, addr, 0, true);
+    SpiFlashi_WaitReady(PAGE_ERASE_TIME_MS);
+    SpiFlashi_WriteDisable();
 }
 
 /** @} */

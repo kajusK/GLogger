@@ -29,14 +29,11 @@
 #include <types.h>
 
 /**
- * Disable write protection
+ * Unlock write-protection registers for all memory addresses
+ *
+ * Must be called once after boot before writing to flash memory
  */
-extern void SpiFlash_WriteEnable(void);
-
-/**
- * Enable write protection
- */
-extern void SpiFlash_WriteDisable(void);
+extern void SpiFlash_WriteUnlock(void);
 
 /**
  * Read memory content

@@ -44,15 +44,15 @@ static void IOdi_GpioInit(uint32_t gpio, uint32_t otyper, uint32_t ospeedr,
 void IOd_SetLine(uint32_t port, uint8_t pad, bool value)
 {
     if (value) {
-        gpio_set(port, pad);
+        gpio_set(port, 1 << pad);
     } else {
-        gpio_clear(port, pad);
+        gpio_clear(port, 1 << pad);
     }
 }
 
 bool IOd_GetLine(uint32_t port, uint8_t pad)
 {
-    return gpio_get(port, pad);
+    return gpio_get(port, 1 << pad);
 }
 
 void IOd_Init(void)
