@@ -97,6 +97,9 @@ bool I2Cd_Transceive(uint8_t device, uint8_t address, const uint8_t *txbuf,
                     wait = false;
                 }
                 if (i2c_nack(i2c)) {
+                    while (i2c_busy(i2c)) {
+                        ;
+                    }
                     return false;
                 }
             }
@@ -134,18 +137,30 @@ void I2Cd_Init(uint8_t device, bool fast)
 {
 	enum rcc_periph_clken rcc = I2Cdi_GetRcc(device);
 	uint32_t i2c = I2Cdi_GetDevice(device);
+	uint8_t clk_mhz;
 
-    rcc_set_i2c_clock_hsi(i2c);
     rcc_periph_clock_enable(rcc);
+    /*
+     * bug at leas on stm32f070, i2c clk period must be shorter than 100 ns
+     * for fast mode - therefore use sysclk if at least 10 MHz, or fail
+     */
+    ASSERT_NOT(fast && rcc_ahb_frequency < 10000000UL);
+    if (fast) {
+        rcc_set_i2c_clock_sysclk(i2c);
+        clk_mhz = rcc_ahb_frequency / 1000000;
+    } else {
+        rcc_set_i2c_clock_hsi(i2c);
+        clk_mhz = 8;
+    }
 
     i2c_reset(i2c);
     i2c_peripheral_disable(i2c);
     i2c_enable_analog_filter(i2c);
     i2c_set_digital_filter(i2c, 0);
     if (fast) {
-		i2c_set_speed(i2c, i2c_speed_fm_400k, 8);
+		i2c_set_speed(i2c, i2c_speed_fm_400k, clk_mhz);
     } else {
-		i2c_set_speed(i2c, i2c_speed_sm_100k, 8);
+		i2c_set_speed(i2c, i2c_speed_sm_100k, clk_mhz);
     }
     i2c_enable_stretching(i2c);
     i2c_set_7bit_addr_mode(i2c);
