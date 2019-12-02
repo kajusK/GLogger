@@ -61,7 +61,7 @@ static const struct usb_device_descriptor usb_dev_descr = {
     .bMaxPacketSize0 = 64,
     .idVendor = USBD_VENDOR,
     .idProduct = USBD_PRODUCT,
-    .bcdDevice = 0x0001,
+    .bcdDevice = 0x0200,
     .iManufacturer = 1,
     .iProduct = 2,
     .iSerialNumber = 3,
@@ -132,7 +132,7 @@ static usbd_device *usb_msc_dev;
 /* Buffer to be used for control requests. */
 static uint8_t usb_control_buffer[128];
 
-void Usbd_MscPool(void)
+void Usbd_MscPoll(void)
 {
     usbd_poll(usb_msc_dev);
 }
@@ -141,6 +141,7 @@ void Usbd_MscInit(uint32_t blocks, usb_read_block_t read,
         usb_write_block_t write)
 {
     rcc_periph_clock_enable(RCC_USB);
+
     usb_msc_dev = usbd_init(&st_usbfs_v2_usb_driver, &usb_dev_descr,
                 &usb_config_descr, usb_strings, 3,
                 usb_control_buffer, sizeof(usb_control_buffer));

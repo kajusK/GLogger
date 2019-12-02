@@ -47,7 +47,7 @@ typedef int (*usb_write_block_t)(uint32_t lba, const uint8_t *buf);
 /**
  * USB processing, call periodically
  */
-extern void Usbd_MscPool(void);
+extern void Usbd_MscPoll(void);
 
 /**
  * Initialize USB and MSC stacks
