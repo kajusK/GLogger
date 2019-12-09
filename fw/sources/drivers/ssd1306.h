@@ -34,6 +34,9 @@
 #define SSD1306_WIDTH 128
 #define SSD1306_HEIGHT 64
 
+/** Default contrast value */
+#define SSD1306_INITIAL_CONTRAST 0x7f
+
 /**
  * Draw single pixel to internal frame buffer
  *
@@ -54,6 +57,20 @@ extern void SSD1306_Flush(void);
  * @param on    If true, turn display on, if false, make it sleep
  */
 extern void SSD1306_DispEnable(bool on);
+
+/**
+ * Set display contrast
+ *
+ * @param contrast  Contrast value, 0-255
+ */
+extern void SSD1306_SetContrast(uint8_t contrast);
+
+/**
+ * Set display orientation
+ *
+ * @param flip      Rotate display by 180 degrees if true
+ */
+extern void SSD1306_SetOrientation(bool flip);
 
 /**
  * Initialize the display
