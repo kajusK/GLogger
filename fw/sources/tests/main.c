@@ -38,6 +38,7 @@ static void RunAll(void)
     Ramdisk_RunTests();
     Gpx_RunTests();
     Gui_RunTests();
+    Log_RunTests();
 }
 
 int main(int argc, const char *argv[])
