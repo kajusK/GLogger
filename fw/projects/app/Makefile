@@ -31,3 +31,19 @@ include $(OPENCM3_DIR)/mk/genlink-config.mk
 LDFLAGS += -lc
 include rules.mk
 include $(OPENCM3_DIR)/mk/genlink-rules.mk
+
+CODECHECK	:= cppcheck
+CODECHECK_FLAGS := --enable=warning,performance -j 4 \
+    $(addprefix -I, $(INCLUDES)) \
+    --template=gcc --suppress=missingIncludeSystem \
+    --suppress=unusedFunction --suppress=unmatchedSuppression \
+    --suppress=missingInclude --suppress=va_list_usedBeforeStarted \
+    --platform=unix32 -q
+CODECHECK_FILES	:= $(FILES) \
+    $(shell find $(SOURCES) -name '*.h' | grep -v $(SOURCES)/external | grep -v $(SOURCES)/tests)
+
+codecheck:
+	@$(CODECHECK) $(CODECHECK_FLAGS) $(CODECHECK_FILES)
+
+.PHONY: codecheck
+
