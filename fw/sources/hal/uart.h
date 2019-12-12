@@ -49,6 +49,14 @@ extern void UARTd_Write(uint8_t device, const uint8_t *buf, size_t len);
 extern void UARTd_Puts(uint8_t device, const char *msg);
 
 /**
+ * Send single character to uart
+ *
+ * @param device    Device ID (starts from 1)
+ * @param c         Character to be printed
+ */
+extern void UARTd_Putc(uint8_t device, char c);
+
+/**
  * Set callback for byte received, callback is called from interrupt!
  *
  * @param device	Device ID (stars from 1)

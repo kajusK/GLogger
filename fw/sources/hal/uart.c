@@ -34,12 +34,12 @@ static const uint32_t uartdi_regs[] = {
     USART1,
 #ifdef USART2_BASE
     USART2,
-#endif
 #ifdef USART3_BASE
     USART3,
-#endif
 #ifdef USART4_BASE
     USART4,
+#endif
+#endif
 #endif
 };
 
@@ -47,12 +47,12 @@ static const uint32_t uartdi_rcc[] = {
     RCC_USART1,
 #ifdef USART2_BASE
     RCC_USART2,
-#endif
 #ifdef USART3_BASE
     RCC_USART3,
-#endif
 #ifdef USART4_BASE
     RCC_USART4,
+#endif
+#endif
 #endif
 };
 
@@ -60,12 +60,12 @@ static const uint8_t uartdi_irq[] = {
     NVIC_USART1_IRQ,
 #ifdef USART2_BASE
     NVIC_USART2_IRQ,
-#endif
 #ifdef USART3_BASE
     NVIC_USART3_4_IRQ,
-#endif
 #ifdef USART4_BASE
     NVIC_USART3_4_IRQ,
+#endif
+#endif
 #endif
 };
 
@@ -104,20 +104,26 @@ void usart1_isr(void)
 	UARTdi_IRQHandler(1, USART1);
 }
 
+#ifdef USART2_BASE
 void usart2_isr(void)
 {
 	UARTdi_IRQHandler(2, USART2);
 }
 
+#ifdef USART3_BASE
 void usart3_4_isr(void)
 {
     if ((USART_ISR(USART3) & USART_FLAG_RXNE) != 0) {
         UARTdi_IRQHandler(3, USART3);
     }
+#ifdef USART4_BASE
     if ((USART_ISR(USART4) & USART_FLAG_RXNE) != 0) {
         UARTdi_IRQHandler(4, USART4);
     }
+#endif
 }
+#endif
+#endif
 
 /**
  * Get UART device address from device id
@@ -165,6 +171,12 @@ void UARTd_Puts(uint8_t device, const char *msg)
 	while (*msg != '\0') {
 		usart_send_blocking(uart, *msg++);
 	}
+}
+
+void UARTd_Putc(uint8_t device, char c)
+{
+	uint32_t uart = UARTdi_GetDevice(device);
+    usart_send_blocking(uart, c);
 }
 
 void UARTd_SetRxCallback(uint8_t device, uartd_callback_t callback)
