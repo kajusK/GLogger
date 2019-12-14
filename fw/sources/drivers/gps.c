@@ -26,6 +26,7 @@
 #include "hal/uart.h"
 #include "hal/io.h"
 #include "utils/ringbuf.h"
+#include "modules/log.h"
 
 #include "gps.h"
 
@@ -113,6 +114,7 @@ static bool Gpsi_ProcessGga(const char *msg, gps_info_t *info)
     info->lat = gga.lat;
     info->lon = gga.lon;
     info->hdop_dm = Gpsi_NmeaF2Dec(&gga.hdop, 10);
+    info->altitude_dm = Gpsi_NmeaF2Dec(&gga.altitude_m, 10);
     return true;
 }
 
@@ -140,12 +142,14 @@ gps_info_t *Gps_Get(void)
 
         switch (Nmea_GetSentenceType(msg)) {
             case NMEA_SENTENCE_GGA:
+                Log_Debug("GPS", msg);
                 /* Main source of data, sets data validity */
                 if (Gpsi_ProcessGga(msg, &info)) {
                     gpsi_data_valid = true;
                 }
                 break;
             case NMEA_SENTENCE_RMC:
+                Log_Debug("GPS", msg);
                 Gpsi_ProcessRmc(msg, &info);
                 break;
             default:
