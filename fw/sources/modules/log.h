@@ -56,10 +56,10 @@ extern void Log_SetLevel(log_level_t level);
 extern void Log_Raw(log_level_t level, const char *source,
         const char *format, ...);
 
-#define Log_Debug(source, format, ...) Log_Raw(LOG_DEBUG, source, format, __VA_ARGS__)
-#define Log_Info(source, format, ...) Log_Raw(LOG_INFO, source, format, __VA_ARGS__)
-#define Log_Warning(source, format, ...) Log_Raw(LOG_WARNING, source, format, __VA_ARGS__)
-#define Log_Error(source, format, ...) Log_Raw(LOG_ERROR, source, format, __VA_ARGS__)
+#define Log_Debug(source, format, ...) Log_Raw(LOG_DEBUG, source, format, ##__VA_ARGS__)
+#define Log_Info(source, format, ...) Log_Raw(LOG_INFO, source, format, ##__VA_ARGS__)
+#define Log_Warning(source, format, ...) Log_Raw(LOG_WARNING, source, format, ##__VA_ARGS__)
+#define Log_Error(source, format, ...) Log_Raw(LOG_ERROR, source, format, ##__VA_ARGS__)
 
 #endif
 

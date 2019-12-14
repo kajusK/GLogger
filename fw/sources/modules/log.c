@@ -25,8 +25,9 @@
 
 #include <stdarg.h>
 #include <string.h>
-#include <hal/uart.h>
-#include <utils/time.h>
+#include "hal/io.h"
+#include "hal/uart.h"
+#include "utils/time.h"
 
 #include "log.h"
 
@@ -40,7 +41,7 @@
 #define TERM_WHITE  "\x1B[37m"
 
 static log_level_t logi_level = LOG_WARNING;
-static int logi_uart;
+static int logi_uart = USART_DEBUG_TX;
 
 /**
  * Convert number to string and send to serial
@@ -178,6 +179,7 @@ void Log_Raw(log_level_t level, const char *source, const char *format, ...)
     va_start(ap, format);
     Logi_Printf(format, ap);
     va_end(ap);
+    UARTd_Puts(logi_uart, "\r\n");
 }
 
 /** @} */
