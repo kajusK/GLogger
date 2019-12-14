@@ -27,15 +27,19 @@
 #include <libopencm3/stm32/i2c.h>
 
 #include "utils/assert.h"
+#include "utils/time.h"
 #include "hal/i2c.h"
+
+/** Timeout for sending one byte */
+#define I2C_TIMEOUT_MS 2
 
 static const uint32_t i2cdi_regs[] = {
 		I2C1,
 #ifdef I2C2_BASE
 		I2C2,
-#endif
 #ifdef I2C3_BASE
 		I2C3,
+#endif
 #endif
 };
 
@@ -43,9 +47,9 @@ static const uint32_t i2cdi_rcc[] = {
 		RCC_I2C1,
 #ifdef I2C2_BASE
 		RCC_I2C2,
-#endif
 #ifdef I2C3_BASE
 		RCC_I2C3,
+#endif
 #endif
 };
 
@@ -77,6 +81,7 @@ bool I2Cd_Transceive(uint8_t device, uint8_t address, const uint8_t *txbuf,
 		uint8_t txlen, uint8_t *rxbuf, uint8_t rxlen)
 {
     uint32_t i2c = I2Cdi_GetDevice(device);
+    uint32_t start;
 
     /** modified code from libopencm3 library - infinite loop on nack, wtf?? */
     if (txlen) {
@@ -92,14 +97,27 @@ bool I2Cd_Transceive(uint8_t device, uint8_t address, const uint8_t *txbuf,
 
         while (txlen--) {
             bool wait = true;
+            start = millis();
             while (wait) {
                 if (i2c_transmit_int_status(i2c)) {
                     wait = false;
                 }
                 if (i2c_nack(i2c)) {
+                    /*
+                     * When no device responds, wait for i2c to send stop
+                     * When actual nack is received, i2c hangs, timeout
+                     */
                     while (i2c_busy(i2c)) {
-                        ;
+                        if (millis() - start > I2C_TIMEOUT_MS) {
+                            i2c_reset(i2c);
+                            break;
+                        }
                     }
+                    return false;
+                }
+                /* When SCL line is e.g. shorted, timeout to avoid infinite loop */
+                if (millis() - start > I2C_TIMEOUT_MS) {
+                    i2c_reset(i2c);
                     return false;
                 }
             }

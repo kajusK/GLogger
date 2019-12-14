@@ -40,6 +40,7 @@
  * @param [out] rxbuf  Buffer for received data or NULL
  * @param rxlen        Amount of bytes to receive
  *
+ * @TODO add support for more than 255 bytes in both directions
  * @return True if data were acked, False for NACK
  */
 extern bool I2Cd_Transceive(uint8_t device, uint8_t address,
