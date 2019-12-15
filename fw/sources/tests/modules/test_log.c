@@ -120,7 +120,7 @@ TEST(LOG, Raw)
     TEST_ASSERT_EQUAL('\0', uart_output[0]);
 
     Log_Raw(LOG_INFO, "FOO", "foo %d", 2);
-    TEST_ASSERT_EQUAL_STRING("[123] "TERM_NORMAL"INFO: "TERM_NORMAL"FOO - foo 2",
+    TEST_ASSERT_EQUAL_STRING("[123] "TERM_NORMAL"INFO: "TERM_NORMAL"FOO - foo 2\r\n",
             uart_output);
 }
 

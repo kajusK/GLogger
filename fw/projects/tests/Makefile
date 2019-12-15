@@ -19,6 +19,7 @@ CSTD		= -std=c11
 INCLUDES	= \
 	-I $(SOURCES) \
 	-I $(SOURCES)/tests \
+	-I $(SOURCES)/app/logger \
 	-I $(UNITY_DIR)/src \
 	-I $(UNITY_DIR)/extras/fixture/src
 BUILD_FLAGS	= -fprofile-arcs -ftest-coverage
