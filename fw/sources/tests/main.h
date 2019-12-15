@@ -39,6 +39,7 @@ extern void Ramdisk_RunTests(void);
 extern void Gpx_RunTests(void);
 extern void Gui_RunTests(void);
 extern void Log_RunTests(void);
+extern void Button_RunTests(void);
 
 extern uint8_t assert_should_fail;
 

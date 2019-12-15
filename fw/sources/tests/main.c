@@ -39,6 +39,7 @@ static void RunAll(void)
     Gpx_RunTests();
     Gui_RunTests();
     Log_RunTests();
+    Button_RunTests();
 }
 
 int main(int argc, const char *argv[])
