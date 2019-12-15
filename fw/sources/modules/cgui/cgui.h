@@ -170,6 +170,20 @@ extern uint16_t Cgui_GetFontHeight(void);
 extern uint16_t Cgui_GetFontWidth(void);
 
 /**
+ * Get width of the screen
+ *
+ * @return width in px
+ */
+extern uint16_t Cgui_GetWidth(void);
+
+/**
+ * Get height of the screen
+ *
+ * @return height in px
+ */
+extern uint16_t Cgui_GetHeight(void);
+
+/**
  * Initialize cgui
  *
  * @param draw      Pointer to function to draw pixel on screen

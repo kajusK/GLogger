@@ -299,6 +299,16 @@ uint16_t Cgui_GetFontWidth(void)
     return cguii_disp.font->width;
 }
 
+uint16_t Cgui_GetWidth(void)
+{
+    return cguii_disp.width;
+}
+
+uint16_t Cgui_GetHeight(void)
+{
+    return cguii_disp.height;
+}
+
 void Cgui_Init(cgui_draw_pixel_t draw, uint16_t width,
         uint16_t height)
 {
