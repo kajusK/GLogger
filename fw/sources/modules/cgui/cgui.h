@@ -131,7 +131,7 @@ extern void Cgui_DrawImage(uint16_t pos_x, uint16_t pos_y, cgui_img_t *img);
 extern bool Cgui_Putc(uint16_t x, uint16_t y, char c);
 
 /**
- * Draw string (single line)
+ * Draw string
  *
  * @param x     Upper left corner of string beginning
  * @param y     Upper left corner of string beginning

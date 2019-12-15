@@ -59,6 +59,7 @@ CFLAGS	+= $(INCLUDES)
 CFLAGS	+= -g
 CFLAGS	+= -Wall -Wextra -pedantic -Wundef -Wshadow
 CFLAGS	+= -Wmissing-prototypes -Wstrict-prototypes
+CFLAGS	+= -Wno-missing-field-initializers
 CFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 CFLAGS	+= -Wno-unused-function
 

@@ -6,6 +6,7 @@ MX_PROJECT = $(PROJECT).ioc
 BOARD_GPIO_FILE = $(SOURCES)/app/$(PROJECT)/board_gpio.h
 # files to build
 FILES = $(wildcard $(SOURCES)/app/$(PROJECT)/*.c) \
+	 $(wildcard $(SOURCES)/app/$(PROJECT)/*/*.c) \
 	 $(wildcard $(SOURCES)/hal/*.c) \
 	 $(wildcard $(SOURCES)/drivers/*.c) \
 	 $(wildcard $(SOURCES)/utils/*.c) \
@@ -16,7 +17,7 @@ CFILES = $(subst $(SOURCES)/, , $(FILES))
 
 DEVICE=stm32f070cbt6
 
-CFLAGS += -Wall -Wextra -Wstrict-prototypes -Wundef -Wshadow -Wredundant-decls
+CFLAGS += -Wall -Wextra -Wstrict-prototypes -Wundef -Wshadow -Wredundant-decls -Wno-missing-field-initializers
 CFLAGS += -Wmissing-prototypes -pedantic --specs=nano.specs --specs=nosys.specs
 CSTD = -std=gnu11
 OPT = -O0

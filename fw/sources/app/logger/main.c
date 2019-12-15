@@ -38,10 +38,13 @@
 #include <drivers/ssd1306.h>
 #include <drivers/gps.h>
 #include <utils/time.h>
+#include <utils/button.h>
 #include <drivers/ramdisk.h>
 #include "storage.h"
 #include "stats.h"
-#include "gui.h"
+#include "gui/gui.h"
+#include "gui/gui.h"
+#include "utils/assert.h"
 #include "version.h"
 
 /**
@@ -81,8 +84,30 @@ static void addReadme(void)
     Ramdisk_AddTextFile("README", "TXT", 0, readme);
 }
 
+static void btnCheck(void)
+{
+    static button_t bt_next = { LINE_SW_NEXT, };
+    static button_t bt_enter = { LINE_SW_ENTER, };
+    button_event_t event;
+
+    event = Button(&bt_next);
+    if (event == BTN_RELEASED_SHORT) {
+        Gui_Event(GUI_EVT_SHORT_NEXT);
+    } else if (event == BTN_LONG_PRESS) {
+        Gui_Event(GUI_EVT_LONG_NEXT);
+    }
+
+    event = Button(&bt_enter);
+    if (event == BTN_RELEASED_SHORT) {
+        Gui_Event(GUI_EVT_SHORT_ENTER);
+    } else if (event == BTN_LONG_PRESS) {
+        //TODO poweroff
+    }
+}
+
 static void loop(void)
 {
+    uint32_t time = millis();
     gps_info_t *gps;
 
     // turn on the gps
@@ -94,12 +119,20 @@ static void loop(void)
 
     //wake up sources - buttons in on mode, holding button in off mode
 
-    gps = Gps_Get();
-    if (gps) {
+    //read buttons, if pressed, turn on display, set turn off timer
+
+    gps = Gps_Loop();
+    if (gps != NULL) {
+        //TODO verify target has moved since last gps fix
         Stats_Update(gps);
         if (gps->altitude_dm != 0 && gps->timestamp != 0) {
             Storage_Add(gps);
         }
+        Gui_Event(GUI_EVT_REDRAW);
+    }
+
+    if (time % 5 == 0) {
+        btnCheck();
     }
 }
 
@@ -139,7 +172,8 @@ int main(void)
     addReadme();
     Usbd_MscInit(Ramdisk_GetSectors(), Ramdisk_Read, Ramdisk_Write);
 
-    Log_Info("System initialized, running main loop");
+    Gui_Event(GUI_EVT_REDRAW);
+    Log_Info(NULL, "System initialized, running main loop");
     while (1) {
         loop();
         Usbd_MscPoll();

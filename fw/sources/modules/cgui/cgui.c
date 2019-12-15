@@ -180,7 +180,6 @@ void Cgui_DrawImage(uint16_t pos_x, uint16_t pos_y, cgui_img_t *img)
 
 bool Cgui_Putc(uint16_t x, uint16_t y, char c)
 {
-    uint8_t *font;
     cgui_img_t img;
     uint32_t index;
 
@@ -216,8 +215,14 @@ void Cgui_Puts(uint16_t x, uint16_t y, const char *msg)
     }
 
     while (*msg != '\0') {
+        if (*msg == '\n') {
+            y += Cgui_GetFontHeight();
+            pos_x = x;
+            msg++;
+            continue;
+        }
         Cgui_Putc(pos_x, y, *msg++);
-        pos_x += cguii_disp.font->width;
+        pos_x += Cgui_GetFontWidth();
     }
 }
 

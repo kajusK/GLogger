@@ -28,9 +28,13 @@
 #include "modules/cgui/cgui.c"
 #include "modules/cgui/fonts.c"
 #include <main.h>
-#include "app/logger/gui.c"
+#include "app/logger/gui/gui.c"
+#include "app/logger/gui/menu.c"
+#include "app/logger/gui/screens.c"
 
-static bool pixmap[GUI_WIDTH][GUI_HEIGHT];
+static bool pixmap[SSD1306_WIDTH][SSD1306_HEIGHT];
+static gps_info_t info;
+static stats_t stats;
 
 /* *****************************************************************************
  * Helpers
@@ -47,10 +51,10 @@ static void print2pbm(const char *name)
         return;
     }
 
-    fprintf(f, "P1\n%d %d\n", GUI_WIDTH, GUI_HEIGHT);
+    fprintf(f, "P1\n%d %d\n", SSD1306_WIDTH, SSD1306_HEIGHT);
 
-    for (int y = 0; y < GUI_HEIGHT; y++) {
-        for (int x = 0; x < GUI_WIDTH; x++) {
+    for (int y = 0; y < SSD1306_HEIGHT; y++) {
+        for (int x = 0; x < SSD1306_WIDTH; x++) {
             if (pixmap[x][y]) {
                 fputc('1', f);
             } else {
@@ -65,28 +69,55 @@ static void print2pbm(const char *name)
 /* *****************************************************************************
  * Mocks
 ***************************************************************************** */
-static void SSD1306_Flush(void)
+void SSD1306_Flush(void)
 {
     return;
 }
 
-static void SSD1306_DrawPixel(uint16_t x, uint16_t y, bool value)
+void SSD1306_DrawPixel(uint16_t x, uint16_t y, bool value)
 {
-    TEST_ASSERT_LESS_THAN(GUI_WIDTH, x);
-    TEST_ASSERT_LESS_THAN(GUI_HEIGHT, y);
+    TEST_ASSERT_LESS_THAN(SSD1306_WIDTH, x);
+    TEST_ASSERT_LESS_THAN(SSD1306_HEIGHT, y);
     pixmap[x][y] = value;
 }
 
-static size_t Storage_GetSize(void)
+gps_info_t *Gps_Get(void)
 {
-    return 100;
+    return &info;
 }
 
-static size_t Storage_SpaceUsed(void)
+stats_t *Stats_Get(void)
 {
-    return 62;
+    return &stats;
 }
 
+void Storage_Erase(void)
+{
+
+}
+
+size_t Storage_SpaceUsed(void)
+{
+    return 1234;
+}
+
+size_t Storage_GetSize(void)
+{
+    return 5678;
+}
+
+void Stats_Init(void)
+{
+
+}
+
+void Log_Raw(log_level_t level, const char *source,
+        const char *format, ...)
+{
+    (void) level;
+    (void) source;
+    (void) format;
+}
 /* *****************************************************************************
  * Tests
 ***************************************************************************** */
@@ -96,8 +127,27 @@ TEST_SETUP(GUI)
 {
     /* clear pix map */
     memset((bool *)pixmap, 0xff, sizeof(pixmap));
-
     Gui_Init();
+
+    info.lat.num = -49123456;
+    info.lat.scale = 1000000;
+    info.lon.num = 162123456;
+    info.lon.scale = 1000000;
+    info.hdop_dm = 123;
+    info.altitude_dm = 12345;
+    info.timestamp = 123456;
+    info.satellites = 4;
+
+    stats.today.dist_dm = 1123450;
+    stats.today.ascend_dm = 25000;
+    stats.today.descend_dm = 123;
+    stats.today.time_s = 12345;
+
+    stats.all.dist_dm = 11123450;
+    stats.all.ascend_dm = 125000;
+    stats.all.descend_dm = 11123;
+    stats.all.time_s = 1234500;
+    stats.storage_used_pct = 12;
 }
 
 TEST_TEAR_DOWN(GUI)
@@ -106,62 +156,51 @@ TEST_TEAR_DOWN(GUI)
 
 TEST(GUI, Popup)
 {
-    Gui_ScrNormal(72, 123, 128762, 1451, 892, 1234, 433482, false);
     Gui_Popup("FooBar");
     print2pbm("popup.pbm");
 }
 
-TEST(GUI, ScrUSB)
+TEST(GUI, Popup2)
 {
-    Gui_ScrUSB();
-    print2pbm("scr_usb.pbm");
+    Gui_Popup("Foo\nBar");
+    print2pbm("popup2.pbm");
 }
 
 TEST(GUI, ScrGps)
 {
-    gps_info_t info;
 
-    info.lat.num = -49123456;
-    info.lat.scale = 1000000;
-    info.lon.num = 162123456;
-    info.lon.scale = 1000000;
-
-    info.hdop_dm = 123;
-    info.altitude_dm = 12345;
-    info.timestamp = 123456;
-    info.satellites = 4;
-    Gui_ScrGps(&info);
+    Guii_DrawGps(&info);
     print2pbm("scr_gps.pbm");
 }
 
-TEST(GUI, ScrNormal)
+TEST(GUI, ScrStats)
 {
-    Gui_ScrNormal(72, 123, 128762, 1451, 892, 1235, 433482, false);
-    print2pbm("scr_normal.pbm");
+    Guii_DrawStats(12, &info, &stats, true);
+    print2pbm("scr_stats.pbm");
 
-    Gui_ScrNormal(100, (uint16_t)-1, 123, 112, 0, -12, 433482, true);
-    print2pbm("scr_normal2.pbm");
+    Guii_DrawStats(100, &info, &stats, false);
+    print2pbm("scr_stats.pbm");
 }
 
 TEST(GUI, ScrDevInfo)
 {
-    Gui_ScrDeviceInfo();
+    Guii_DrawDeviceInfo(9001, 12345);
     print2pbm("scr_devinfo.pbm");
 }
 
 TEST(GUI, ScrMenu)
 {
-    Gui_ScrMenu();
+    Gui_Menu(GUI_EVT_REDRAW);
     print2pbm("scr_menu.pbm");
-
 }
 
 TEST_GROUP_RUNNER(GUI)
 {
     RUN_TEST_CASE(GUI, Popup);
-    RUN_TEST_CASE(GUI, ScrUSB);
+    RUN_TEST_CASE(GUI, Popup2);
     RUN_TEST_CASE(GUI, ScrGps);
-    RUN_TEST_CASE(GUI, ScrNormal);
+    RUN_TEST_CASE(GUI, ScrStats);
+    RUN_TEST_CASE(GUI, ScrStats2);
     RUN_TEST_CASE(GUI, ScrDevInfo);
     RUN_TEST_CASE(GUI, ScrMenu);
 }

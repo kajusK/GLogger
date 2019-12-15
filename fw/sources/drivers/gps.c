@@ -34,6 +34,7 @@
 
 static ring_t gpsi_ringbuf;
 static bool gpsi_data_valid = false;
+static gps_info_t gpsi_info;
 
 /**
  * Callback for data received from GPS
@@ -132,8 +133,15 @@ void Gps_WakeUp(void)
 
 gps_info_t *Gps_Get(void)
 {
-    static gps_info_t info = {0};
+    if (gpsi_data_valid) {
+        return &gpsi_info;
+    }
+    return NULL;
+}
 
+//TODO valid only after both gga and rmc received
+gps_info_t *Gps_Loop(void)
+{
     while (!Ring_Empty(&gpsi_ringbuf)) {
         const char *msg = Nmea_AddChar(Ring_Pop(&gpsi_ringbuf));
         if (msg == NULL) {
@@ -144,22 +152,20 @@ gps_info_t *Gps_Get(void)
             case NMEA_SENTENCE_GGA:
                 Log_Debug("GPS", msg);
                 /* Main source of data, sets data validity */
-                if (Gpsi_ProcessGga(msg, &info)) {
+                if (Gpsi_ProcessGga(msg, &gpsi_info)) {
                     gpsi_data_valid = true;
+                    return &gpsi_info;
                 }
                 break;
             case NMEA_SENTENCE_RMC:
                 Log_Debug("GPS", msg);
-                Gpsi_ProcessRmc(msg, &info);
+                Gpsi_ProcessRmc(msg, &gpsi_info);
                 break;
             default:
                 break;
         }
     }
 
-    if (gpsi_data_valid) {
-        return &info;
-    }
     return NULL;
 }
 

@@ -52,13 +52,20 @@ extern void Gps_Sleep(void);
 extern void Gps_WakeUp(void);
 
 /**
- * Get received GPS data
+ * Get GPS data
+ *
+ * @return Data if any or NULL if no data received yet
+ */
+gps_info_t *Gps_Get(void);
+
+/**
+ * Process received GPS data
  *
  * Should be called periodically as it fetches the data from uart buffer
  *
- * @return NULL if no valid data received, else pointer to received data
+ * @return data if just processed new gps data or NULL
  */
-gps_info_t *Gps_Get(void);
+gps_info_t *Gps_Loop(void);
 
 /**
  * Initialize GPS module
