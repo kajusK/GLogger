@@ -125,6 +125,11 @@ void SSD1306_DrawPixel(uint16_t x, uint16_t y, bool value)
     /* first byte is ssd1306 command */
     pos += 1;
 
+    /* Ignore drawing outside the buffer */
+    if (pos >= sizeof(ssd1306i_fbuf)) {
+        return;
+    }
+
     if (value) {
         ssd1306i_fbuf[pos] |= bit;
     } else {
