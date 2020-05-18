@@ -34,6 +34,7 @@
 
 static bool pixmap[SSD1306_WIDTH][SSD1306_HEIGHT];
 static gps_info_t info;
+static gps_sat_t sat;
 static stats_t stats;
 
 /* *****************************************************************************
@@ -84,6 +85,11 @@ void SSD1306_DrawPixel(uint16_t x, uint16_t y, bool value)
 gps_info_t *Gps_Get(void)
 {
     return &info;
+}
+
+gps_sat_t *Gps_GetSat(void)
+{
+    return &sat;
 }
 
 stats_t *Stats_Get(void)
@@ -138,6 +144,28 @@ TEST_SETUP(GUI)
     info.timestamp = 123456;
     info.satellites = 4;
 
+    sat.count = 4;
+    sat.visible = 4;
+    sat.sat[0].azimuth = 123;
+    sat.sat[0].elevation = 25;
+    sat.sat[0].prn = 11;
+    sat.sat[0].snr = 10;
+
+    sat.sat[1].azimuth = 11;
+    sat.sat[1].elevation = 78;
+    sat.sat[1].prn = 31;
+    sat.sat[1].snr = 78;
+
+    sat.sat[2].azimuth = 9;
+    sat.sat[2].elevation = 12;
+    sat.sat[2].prn = 2;
+    sat.sat[2].snr = 0;
+
+    sat.sat[3].azimuth = 341;
+    sat.sat[3].elevation = 87;
+    sat.sat[3].prn = 67;
+    sat.sat[3].snr = 11;
+
     stats.today.dist_dm = 1123450;
     stats.today.ascend_dm = 25000;
     stats.today.descend_dm = 123;
@@ -166,11 +194,16 @@ TEST(GUI, Popup2)
     print2pbm("popup2.pbm");
 }
 
-TEST(GUI, ScrGps)
+TEST(GUI, ScrGpsFix)
 {
+    Guii_DrawGpsFix(&info);
+    print2pbm("scr_gps_fix.pbm");
+}
 
-    Guii_DrawGps(&info);
-    print2pbm("scr_gps.pbm");
+TEST(GUI, ScrGpsSat)
+{
+    Guii_DrawGpsSat(&sat);
+    print2pbm("scr_gps_sat.pbm");
 }
 
 TEST(GUI, ScrStats)
@@ -198,7 +231,8 @@ TEST_GROUP_RUNNER(GUI)
 {
     RUN_TEST_CASE(GUI, Popup);
     RUN_TEST_CASE(GUI, Popup2);
-    RUN_TEST_CASE(GUI, ScrGps);
+    RUN_TEST_CASE(GUI, ScrGpsFix);
+    RUN_TEST_CASE(GUI, ScrGpsSat);
     RUN_TEST_CASE(GUI, ScrStats);
     RUN_TEST_CASE(GUI, ScrDevInfo);
     RUN_TEST_CASE(GUI, ScrMenu);

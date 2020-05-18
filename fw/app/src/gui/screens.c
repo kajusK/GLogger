@@ -37,7 +37,8 @@
 typedef enum {
     GUI_SCR_TODAY,     /**< Stats since boot */
     GUI_SCR_ALL,       /**< Stats since restart */
-    GUI_SCR_GPS,       /**< GPS info */
+    GUI_SCR_GPS_FIX,   /**< GPS fix info */
+    GUI_SCR_GPS_SAT,   /**< GPS satellite info */
     GUI_SCR_INFO,      /**< Storage info */
     GUI_SCR_COUNT,     /**< Amount of main screens */
 } gui_screen_t;
@@ -47,7 +48,7 @@ typedef enum {
  *
  * @param info      GPS data
  */
-static void Guii_DrawGps(const gps_info_t *info)
+static void Guii_DrawGpsFix(const gps_info_t *info)
 {
     Cgui_FillScreen(0);
     char lat_dir = 'N';
@@ -59,6 +60,8 @@ static void Guii_DrawGps(const gps_info_t *info)
     if (info == NULL) {
         //TODO show satellites signals
         Cgui_Printf(0, 0, "No GPS fix yet");
+        SSD1306_Flush();
+        return;
     }
 
     lat = info->lat;
@@ -72,7 +75,7 @@ static void Guii_DrawGps(const gps_info_t *info)
         lat_dir = 'W';
     }
 
-    time = gmtime(&info->timestamp);
+    time = gmtime(&info->time);
 
     Cgui_Printf(0, 0, "%c%d.%d\n%c%d.%d\nAlt:%dm\nDOP:%dm Sat:%d\n"
             "%d:%d %d.%d.%d",
@@ -81,6 +84,32 @@ static void Guii_DrawGps(const gps_info_t *info)
             info->altitude_dm/10, info->hdop_dm/10, info->satellites,
             time->tm_hour, time->tm_min, time->tm_mday, time->tm_mon + 1,
             time->tm_year + 1900);
+    SSD1306_Flush();
+}
+
+/**
+ * Show current GPS satellite info
+ *
+ * @param info      GPS data
+ */
+static void Guii_DrawGpsSat(const gps_sat_t *sat)
+{
+    const uint8_t margin = 3;
+    const uint8_t width = 5;
+    uint8_t i;
+    uint16_t height;
+    uint16_t x = margin;
+    uint16_t top = Cgui_GetFontHeight() + margin;
+    uint16_t bottom = Cgui_GetHeight() - margin;
+
+    Cgui_FillScreen(0);
+    Cgui_Printf(0, 0, "Gps sats: %d", sat->visible);
+
+    for (i = 0; i < sat->count && x <= Cgui_GetWidth() - width; i++) {
+        height = ((bottom - top) * sat->sat[i].snr) / MAX_SV_SNR;
+        Cgui_DrawFilledBox(x, bottom-height, x+width, bottom, true);
+        x += width+margin;
+    }
     SSD1306_Flush();
 }
 
@@ -177,8 +206,11 @@ bool Gui_Screens(gui_event_t event)
         case GUI_SCR_ALL:
             Guii_DrawStats(bat_pct, Gps_Get(), Stats_Get(), false);
             break;
-        case GUI_SCR_GPS:
-            Guii_DrawGps(Gps_Get());
+        case GUI_SCR_GPS_FIX:
+            Guii_DrawGpsFix(Gps_Get());
+            break;
+        case GUI_SCR_GPS_SAT:
+            Guii_DrawGpsSat(Gps_GetSat());
             break;
         case GUI_SCR_INFO:
             Guii_DrawDeviceInfo(Storage_SpaceUsed(), Storage_GetSize());
