@@ -63,6 +63,11 @@ extern bool Gui_Screens(gui_event_t event);
 extern void Gui_Popup(const char *str);
 
 /**
+ * Custom popup graphic was drawn, notify gui for proper button handling
+ */
+extern void Gui_CustomPopup(void);
+
+/**
  * Sent event to GUI
  *
  * @param event     Event to be processed

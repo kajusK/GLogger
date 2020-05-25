@@ -62,6 +62,11 @@ void Gui_Popup(const char *str)
     Guii_DrawPopup(str);
 }
 
+void Gui_CustomPopup(void)
+{
+    guii_popup_shown = true;
+}
+
 void Gui_Event(gui_event_t event)
 {
     static bool in_menu = false;

@@ -39,7 +39,6 @@ typedef enum {
     GUI_SCR_ALL,       /**< Stats since restart */
     GUI_SCR_GPS_FIX,   /**< GPS fix info */
     GUI_SCR_GPS_SAT,   /**< GPS satellite info */
-    GUI_SCR_INFO,      /**< Storage info */
     GUI_SCR_COUNT,     /**< Amount of main screens */
 } gui_screen_t;
 
@@ -110,19 +109,6 @@ static void Guii_DrawGpsSat(const gps_sat_t *sat)
         Cgui_DrawFilledBox(x, bottom-height, x+width, bottom, true);
         x += width+margin;
     }
-    SSD1306_Flush();
-}
-
-/**
- * Display info about this device
- */
-static void Guii_DrawDeviceInfo(uint32_t mem_used, uint32_t mem_size)
-{
-    Cgui_FillScreen(0);
-
-    Cgui_Printf(0, 0, "Mem used: %d%%\nMem: %d\nFw: v%d.%d\nHw: v%d.%d",
-            mem_used*100/mem_size, mem_size,
-            FW_MAJOR, FW_MINOR, HW_MAJOR, HW_MINOR);
 
     SSD1306_Flush();
 }
@@ -212,8 +198,6 @@ bool Gui_Screens(gui_event_t event)
         case GUI_SCR_GPS_SAT:
             Guii_DrawGpsSat(Gps_GetSat());
             break;
-        case GUI_SCR_INFO:
-            Guii_DrawDeviceInfo(Storage_SpaceUsed(), Storage_GetSize());
             break;
         default:
             break;
