@@ -29,6 +29,7 @@
 #include "modules/cgui/cgui.h"
 #include "storage.h"
 #include "stats.h"
+#include "version.h"
 #include "gui.h"
 
 /**
@@ -39,18 +40,17 @@
 typedef bool (*gui_menu_action_cb_t)(void);
 
 /**
- * Get current value index for the selection
- *
- * @return       Index of the item in values
+ * Callback to get currently selected item from list of values
+ * @return Selected value index
  */
-typedef uint8_t (*gui_menu_get_cb_t)(void);
+typedef uint8_t (*gui_menu_value_get_cb_t)(void);
 
 /**
- * Set current value index for the selection
- *
- * @param pos       Index of the item in values
+ * Callback to set newly selected item from list of values
+ * @param index     Selected value index
  */
-typedef void (*gui_menu_set_cb_t)(uint8_t pos);
+typedef void (*gui_menu_value_set_cb_t)(uint8_t index);
+
 
 /** Possible types of menu items */
 typedef enum {
@@ -61,20 +61,23 @@ typedef enum {
     GUI_MENU_EMPTY,     /**< This item marks end of menu items */
 } gui_menu_type_t;
 
+/** Values list for the menu */
+typedef const struct {
+    char *const (*list)[];              /**< List of possible values */
+    uint8_t count;                      /**< Amount of values */
+    gui_menu_value_get_cb_t get_cb;     /**< Get currently selected value */
+    gui_menu_value_set_cb_t set_cb;     /**< Value selected */
+} gui_menu_values_t;
+
 /** Single menu item */
-typedef struct {
+typedef const struct {
     const char *name;       /**< Name of this menu item */
     gui_menu_type_t type;   /**< Type of this menu item */
 
     union {
-        struct gui_menu_t *submenu;     /**< Pointer to submenu */
-        gui_menu_action_cb_t action_cb; /**< Callback for action run */
-        struct {
-            gui_menu_set_cb_t set_cb;   /**< Value changed callback */
-            gui_menu_get_cb_t get_cb;   /**< Get Value callback */
-            uint8_t values_count;       /**< Total amount of values */
-            const char *(*values)[];    /**< List of strings to select between */
-        };
+        struct gui_menu_t *submenu;         /**< Pointer to submenu */
+        gui_menu_action_cb_t action_cb;     /**< Callback for action run */
+        const gui_menu_values_t *values;    /**< List of selectable values */
     };
 } gui_menu_item_t;
 
@@ -99,6 +102,7 @@ static void Guii_DrawMenu(gui_menu_t *menu)
     uint8_t lines;
     uint8_t end;
     uint8_t i;
+    const gui_menu_item_t *item;
 
     Cgui_FillScreen(0);
 
@@ -115,17 +119,17 @@ static void Guii_DrawMenu(gui_menu_t *menu)
     i = menu->rot;
     end = menu->rot + lines - 1;
     while (i <= end && (*menu->items)[i].type != GUI_MENU_EMPTY) {
+        item = &(*menu->items)[i];
         if (i == menu->cursor) {
             Cgui_Putc(0, y, '>');
         }
-        Cgui_Puts(Cgui_GetFontWidth(), y, (*menu->items)[i].name);
-        if ((*menu->items)[i].type == GUI_MENU_VALUES &&
-                (*menu->items)[i].get_cb != NULL &&
-                (*menu->items)[i].get_cb() < (*menu->items)[i].values_count) {
-            x = Cgui_GetFontWidth() * (strlen((*menu->items)[i].name)+1);
+        Cgui_Puts(Cgui_GetFontWidth(), y, item->name);
+        if (item->type == GUI_MENU_VALUES &&
+                item->values->get_cb() < item->values->count) {
+            x = Cgui_GetFontWidth() * (strlen(item->name) + 1);
             Cgui_Putc(x, y, ':');
             x += Cgui_GetFontWidth();
-            //TODO Cgui_Puts(x, y, (*menu->items)[i].values[(*menu->items)[i].get_cb()]);
+            Cgui_Puts(x, y, (*item->values->list)[item->values->get_cb()]);
         }
         y += Cgui_GetFontHeight();
         i++;
@@ -145,19 +149,38 @@ static bool Guii_StorageErase(void)
     return true;
 }
 
+uint8_t val = 0;
+static uint8_t test_get(void)
+{
+    return val;
+}
+
+static void test_set(uint8_t index)
+{
+    val = index;
+}
+
 /**
  * Run system info action
  */
 static bool Guii_SysInfo(void)
 {
-    //sys version, deadbadger.cz Glogger,...
+    Cgui_FillScreen(0);
+    uint32_t mem_used = Storage_SpaceUsed();
+    uint32_t mem_size = Storage_GetSize();
+    Cgui_Printf(0, 0, "Deadbadger.cz\nMem used: %d%%\nMem: %d\nFw: v%d.%d\nHw: v%d.%d",
+            mem_used*100/mem_size, mem_size,
+            FW_MAJOR, FW_MINOR, HW_MAJOR, HW_MINOR);
+
+    SSD1306_Flush();
+    Gui_CustomPopup();
     return false;
 }
 
 /** System menu description */
 static gui_menu_t guii_menu = {
     .name = "Menu",
-    .items = &(const gui_menu_item_t[]) {
+    .items = &(gui_menu_item_t []) {
         { .name = "System info",
           .type = GUI_MENU_ACTION,
           .action_cb = Guii_SysInfo,
@@ -179,25 +202,33 @@ static gui_menu_t guii_menu = {
         },
         { .name = "Log period",
           .type = GUI_MENU_VALUES,
-          .values = &(const char *[]){"1s", "10s", "1min", "10min"},
-          .values_count = 4,
-          //.set_cb = Config_SetLogPeriodS
-          //.get_cb = Config_GetLogPeriodS
+          .values = &(gui_menu_values_t){
+                .list = &(char *const[]){"auto", "1s", "10s", "1m", "10m"},
+                .count = 5,
+                .get_cb = test_get,
+                .set_cb = test_set,
+            }
         },
+#if 0
         { .name = "Charging",
           .type = GUI_MENU_VALUES,
-          .values = &(const char *[]){"en", "dis"},
-          .values_count = 2,
-         // .set_cb = Config_SetCharging
-         // .get_cb = Config_GetCharging
+          .values = &(gui_menu_values_t){
+                .list = &(char *const[]){"en", "dis"},
+                .count = 2,
+                .get_cb = test_get,
+                .set_cb = test_set,
+          }
         },
         { .name = "Acceler",
           .type = GUI_MENU_VALUES,
-          .values = &(const char *[]){"en", "dis"},
-          .values_count = 2,
-         // .set_cb = Config_SetAccelerometer
-         // .get_cb = Config_GetAccelerometer
+          .values = &(gui_menu_values_t) {
+                .list = &(char *const[]){"en", "dis"},
+                .count = 2,
+                .get_cb = test_get,
+                .set_cb = test_set,
+          }
         },
+#endif
         /*
          * TODO debug screen - accelerometer calibration, raw data, manual
          * power control (lcd, gps, accel, whole unit),...
@@ -258,10 +289,10 @@ bool Gui_Menu(gui_event_t event)
                     }
                     break;
                 case GUI_MENU_VALUES:
-                    if (item->get_cb == NULL || item->set_cb == NULL) {
-                        Log_Warning("GUI", "Empty values callback");
+                    if (item->values->get_cb() >= item->values->count - 1) {
+                        item->values->set_cb(0);
                     } else {
-                        item->set_cb(item->get_cb() + 1);
+                        item->values->set_cb(item->values->get_cb() + 1);
                     }
                     break;
                 default:
