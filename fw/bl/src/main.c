@@ -23,8 +23,6 @@
  * @{
  */
 
-#include <hal/usb_msc.h>
-#include <drivers/ramdisk.h>
 #include <modules/fw.h>
 
 /**
@@ -33,17 +31,5 @@
 int main(void)
 {
     Fw_Run();
-
-    /* If fw image failed to boot, wait forever */
-    /* TODO - create flash disk for fw update */
-
-    /*
-    Ramdisk_Init(64000000, "Bootloader");
-    Usbd_MscInit(Ramdisk_GetSectors(), Ramdisk_Read, Ramdisk_Write);
-    */
-
-    while (1) {
-     //   Usbd_MscPool();
-    }
     return 0;
 }
