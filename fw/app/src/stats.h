@@ -47,7 +47,7 @@ typedef struct {
  *
  * @param gps   GPS measured data
  */
-extern void Stats_Update(gps_info_t *gps);
+extern void Stats_Update(const gps_info_t *gps);
 
 /**
  * Get current statistics

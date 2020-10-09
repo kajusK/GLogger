@@ -30,6 +30,7 @@
 #include "storage.h"
 #include "stats.h"
 #include "version.h"
+#include "desc.h"
 #include "gui.h"
 
 /**
@@ -134,7 +135,7 @@ static void Guii_DrawMenu(gui_menu_t *menu)
         y += Cgui_GetFontHeight();
         i++;
     }
-    SSD1306_Flush();
+    SSD1306_Flush(&ssd1306_desc);
 }
 
 /**
@@ -149,17 +150,6 @@ static bool Guii_StorageErase(void)
     return true;
 }
 
-uint8_t val = 0;
-static uint8_t test_get(void)
-{
-    return val;
-}
-
-static void test_set(uint8_t index)
-{
-    val = index;
-}
-
 /**
  * Run system info action
  */
@@ -172,7 +162,7 @@ static bool Guii_SysInfo(void)
             mem_used*100/mem_size, mem_size,
             FW_MAJOR, FW_MINOR, HW_MAJOR, HW_MINOR);
 
-    SSD1306_Flush();
+    SSD1306_Flush(&ssd1306_desc);
     Gui_CustomPopup();
     return false;
 }
@@ -200,6 +190,8 @@ static gui_menu_t guii_menu = {
                 },
             },
         },
+        /*
+         * TODO
         { .name = "Log period",
           .type = GUI_MENU_VALUES,
           .values = &(gui_menu_values_t){
@@ -209,11 +201,10 @@ static gui_menu_t guii_menu = {
                 .set_cb = test_set,
             }
         },
-#if 0
         { .name = "Charging",
           .type = GUI_MENU_VALUES,
           .values = &(gui_menu_values_t){
-                .list = &(char *const[]){"en", "dis"},
+                .list = &(char *const[]){"dis", "en"},
                 .count = 2,
                 .get_cb = test_get,
                 .set_cb = test_set,
@@ -222,13 +213,13 @@ static gui_menu_t guii_menu = {
         { .name = "Acceler",
           .type = GUI_MENU_VALUES,
           .values = &(gui_menu_values_t) {
-                .list = &(char *const[]){"en", "dis"},
+                .list = &(char *const[]){"dis", "en"},
                 .count = 2,
                 .get_cb = test_get,
                 .set_cb = test_set,
           }
         },
-#endif
+        */
         /*
          * TODO debug screen - accelerometer calibration, raw data, manual
          * power control (lcd, gps, accel, whole unit),...

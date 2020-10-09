@@ -32,6 +32,7 @@
 #include "storage.h"
 #include "stats.h"
 #include "version.h"
+#include "desc.h"
 #include "gui.h"
 
 typedef enum {
@@ -59,7 +60,7 @@ static void Guii_DrawGpsFix(const gps_info_t *info)
     if (info == NULL) {
         //TODO show satellites signals
         Cgui_Printf(0, 0, "No GPS fix yet");
-        SSD1306_Flush();
+        SSD1306_Flush(&ssd1306_desc);
         return;
     }
 
@@ -83,7 +84,7 @@ static void Guii_DrawGpsFix(const gps_info_t *info)
             info->altitude_dm/10, info->hdop_dm/10, info->satellites,
             time->tm_hour, time->tm_min, time->tm_mday, time->tm_mon + 1,
             time->tm_year + 1900);
-    SSD1306_Flush();
+    SSD1306_Flush(&ssd1306_desc);
 }
 
 /**
@@ -110,7 +111,7 @@ static void Guii_DrawGpsSat(const gps_sat_t *sat)
         x += width+margin;
     }
 
-    SSD1306_Flush();
+    SSD1306_Flush(&ssd1306_desc);
 }
 
 /**
@@ -159,7 +160,7 @@ static void Guii_DrawStats(uint8_t bat_pct, const gps_info_t *gps,
     Cgui_Printf(0, Cgui_GetFontHeight()*4+1, "Time: %dh %dm",
             data->time_s/3600, (data->time_s/60)%60);
 
-    SSD1306_Flush();
+    SSD1306_Flush(&ssd1306_desc);
 }
 
 bool Gui_Screens(gui_event_t event)
@@ -187,16 +188,16 @@ bool Gui_Screens(gui_event_t event)
 
     switch (scr) {
         case GUI_SCR_TODAY:
-            Guii_DrawStats(bat_pct, Gps_Get(), Stats_Get(), true);
+            Guii_DrawStats(bat_pct, Gps_Get(&gps_desc), Stats_Get(), true);
             break;
         case GUI_SCR_ALL:
-            Guii_DrawStats(bat_pct, Gps_Get(), Stats_Get(), false);
+            Guii_DrawStats(bat_pct, Gps_Get(&gps_desc), Stats_Get(), false);
             break;
         case GUI_SCR_GPS_FIX:
-            Guii_DrawGpsFix(Gps_Get());
+            Guii_DrawGpsFix(Gps_Get(&gps_desc));
             break;
         case GUI_SCR_GPS_SAT:
-            Guii_DrawGpsSat(Gps_GetSat());
+            Guii_DrawGpsSat(Gps_GetSat(&gps_desc));
             break;
             break;
         default:

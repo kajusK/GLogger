@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "drivers/spi_flash.h"
+#include "desc.h"
 #include "config.h"
 #include "storage.h"
 
@@ -69,7 +70,7 @@ bool Storage_IsEOL(const storage_item_t *item)
 
 void Storage_Erase(void)
 {
-    SpiFlash_Erase();
+    SpiFlash_Erase(&spiflash_desc);
     storagei_offset = 0;
 }
 
@@ -103,7 +104,8 @@ bool Storage_Add(const gps_info_t *info)
     item.timestamp = info->timestamp;
     item.elevation_m = info->altitude_dm / 10;
 
-    SpiFlash_Write(storagei_offset, (uint8_t *) &item, sizeof(item));
+    SpiFlash_Write(&spiflash_desc, storagei_offset, (uint8_t *) &item,
+            sizeof(item));
     storagei_offset += sizeof(item);
     return true;
 }
@@ -115,7 +117,8 @@ bool Storage_Get(uint32_t id, storage_item_t *item)
         return false;
     }
 
-    SpiFlash_Read(offset, (uint8_t *) item, sizeof(storage_item_t));
+    SpiFlash_Read(&spiflash_desc, offset, (uint8_t *) item,
+            sizeof(storage_item_t));
     return true;
 }
 
@@ -126,7 +129,7 @@ void Storage_Init(void)
     storagei_offset = 0;
 
     while (storagei_offset < STORAGE_SIZE) {
-        SpiFlash_Read(storagei_offset, buf, item_size);
+        SpiFlash_Read(&spiflash_desc, storagei_offset, buf, item_size);
         if (Storagei_ItemEmpty((storage_item_t *) buf)) {
             break;
         }
@@ -134,10 +137,11 @@ void Storage_Init(void)
     }
     /* Add new invalid item - end of log record */
     if (storagei_offset != 0) {
-        SpiFlash_Read(storagei_offset - item_size, buf, item_size);
+        SpiFlash_Read(&spiflash_desc, storagei_offset - item_size, buf,
+                item_size);
         if (!Storage_IsEOL((storage_item_t *) buf)) {
             memset(buf, 0x00, item_size);
-            SpiFlash_Write(storagei_offset, buf, item_size);
+            SpiFlash_Write(&spiflash_desc, storagei_offset, buf, item_size);
             storagei_offset += item_size;
         }
     }

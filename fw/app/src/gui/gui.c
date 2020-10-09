@@ -27,6 +27,7 @@
 #include "modules/log.h"
 #include "modules/cgui/cgui.h"
 #include "drivers/ssd1306.h"
+#include "desc.h"
 #include "gui.h"
 
 static bool guii_popup_shown = false;
@@ -53,7 +54,12 @@ static void Guii_DrawPopup(const char *str)
     height = height * Cgui_GetFontHeight();
 
     Cgui_Puts(14, Cgui_GetHeight()/2-height/2, str);
-    SSD1306_Flush();
+    SSD1306_Flush(&ssd1306_desc);
+}
+
+static void Guii_DrawPixel(uint16_t x, uint16_t y, bool value)
+{
+   SSD1306_DrawPixel(&ssd1306_desc, x, y, value);
 }
 
 void Gui_Popup(const char *str)
@@ -98,7 +104,7 @@ void Gui_Event(gui_event_t event)
 
 void Gui_Init(void)
 {
-    Cgui_Init(SSD1306_DrawPixel, SSD1306_WIDTH, SSD1306_HEIGHT);
+    Cgui_Init(Guii_DrawPixel, SSD1306_WIDTH, SSD1306_HEIGHT);
 }
 
 /** @} */

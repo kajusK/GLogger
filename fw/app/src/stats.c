@@ -37,7 +37,7 @@
 
 static stats_t statsi;
 
-void Stats_Update(gps_info_t *gps)
+void Stats_Update(const gps_info_t *gps)
 {
     static gps_info_t prev;
     static bool prev_ready = false;
