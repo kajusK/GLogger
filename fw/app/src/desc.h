@@ -16,25 +16,26 @@
  */
 
 /**
- * @file    app/config.h
- * @brief   System configuration
+ * @file    app/desc.h
+ * @brief   Device drivers descriptors
  *
  * @addtogroup app
  * @{
  */
 
-#ifndef __APP_CONFIG_H_
-#define __APP_CONFIG_H_
+#ifndef __APP_DESC_H_
+#define __APP_DESC_H_
 
-/** Size of the external flash in bytes */
-#define STORAGE_SIZE 4000000U
+#include <types.h>
+#include <drivers/gps.h>
+#include <drivers/spi_flash.h>
+#include <drivers/ssd1306.h>
 
-#define USB_VENDOR 0x0483 /* STMicroelectronics */
-#define USB_PRODUCT 0x5720 /* Mass storage device */
-#define USB_MANUFACTURE_STR "Deadbadger"
-#define USB_DEVICE_STR "Device"
-#define USB_VERSION_STR "0000"
+extern gps_desc_t gps_desc;
+extern spiflash_desc_t spiflash_desc;
+extern ssd1306_desc_t ssd1306_desc;
 
 #endif
 
 /** @} */
+

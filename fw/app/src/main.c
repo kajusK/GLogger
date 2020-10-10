@@ -162,6 +162,7 @@ int main(void)
 
     /* early init - debug output */
     UARTd_Init(USART_DEBUG_TX, 115200);
+    Log_Init(USART_DEBUG_TX);
     Log_SetLevel(LOG_DEBUG);
     Log_Info(NULL, "GLogger, fw version %d.%d", FW_MAJOR, FW_MINOR);
     Log_Info(NULL, "Deadbadger.cz");
@@ -189,7 +190,7 @@ int main(void)
     Ramdisk_Init(64000000, "GLogger");
     Ramdisk_RegisterWriteCb(ramdisk_write);
     addReadme();
-    Ramdisk_AddFile("fw", "bin", 0, UF2_GetImgSize(), fw_read);
+    Ramdisk_AddFile("fw", "uf2", 0, UF2_GetImgSize(), fw_read);
     Usb_Init();
 
     Gui_Event(GUI_EVT_REDRAW);

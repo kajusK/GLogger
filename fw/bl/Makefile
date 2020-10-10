@@ -26,16 +26,16 @@ SRCDIR = src
 AFW = ../external/AFW
 
 # linker script (generics in libopencm3/lib/stm32)
-LDSCRIPT = ../app/stm32f070cbt6.ld
+LDSCRIPT = bootloader.ld
 # STM32CubeMX project to generate board_gpio.h file
 MX_PROJECT = ../app/logger.ioc
 
 # source files to include in build
 SOURCES = $(wildcard $(SRCDIR)/*.c)
 
-AFW_SOURCES = $(wildcard $(AFW)/sources/hal/*.c) \
+AFW_SOURCES = $(wildcard $(AFW)/sources/hal/flash.c) \
 	      $(AFW)/sources/drivers/spi_flash.c \
-	      $(AFW)/sources/modules/log.c \
+	      $(AFW)/sources/modules/fw.c \
 	      $(AFW)/sources/utils/crc.c
 
 INCLUDES = $(SRCDIR) \
@@ -68,7 +68,7 @@ CODECHECK_FILES	= $(SOURCES) \
 # Build configuration
 #######################
 CSTD = -std=gnu11
-OPT = -O0
+OPT = -Og
 OPENCM3_LIB = opencm3_$(shell echo $(FAMILY) | tr '[:upper:]' '[:lower:]')
 OPENCM3_LIB_PATH = $(OPENCM3_DIR)/lib/lib$(OPENCM3_LIB).a
 ARCH_FLAGS = -mthumb $(FPU) -mcpu=$(CPU) -D$(FAMILY)
@@ -78,7 +78,7 @@ CFLAGS = -Wall -Wextra -Wstrict-prototypes -Wundef -Wshadow -Wredundant-decls \
 	-Wimplicit-function-declaration  \
 	--specs=nano.specs --specs=nosys.specs \
 	$(CSTD) $(OPT) $(ARCH_FLAGS) $(addprefix -I, $(INCLUDES)) \
-	-I $(OPENCM3_DIR)/include
+	-I $(OPENCM3_DIR)/include -g
 
 LDFLAGS = -T$(LDSCRIPT) -L$(OPENCM3_DIR)/lib $(ARCH_FLAGS) -nostartfiles \
 	  --specs=nano.specs -Wl,--gc-sections -Wl,-Map=$(PROJECT).map -lc
@@ -99,7 +99,7 @@ SIZE	:= $(PREFIX)size
 #######################
 # Build rules
 #######################
-all: codecheck $(OPENCM3_LIB_PATH) $(PROJECT).elf size
+all: codecheck $(OPENCM3_LIB_PATH) $(PROJECT).elf $(PROJECT).bin size
 
 size: $(PROJECT).elf
 	$(SIZE) $<
@@ -123,11 +123,14 @@ $(BUILD_DIR)/%.o: $(AFW)/%.c
 $(PROJECT).elf: $(BOARD_GPIO_FILE) $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
+$(PROJECT).bin: $(PROJECT).elf
+	$(OBJCOPY) -O binary $(PROJECT).elf $(PROJECT).bin
+
 flash: $(PROJECT).elf
 	st-flash write $< 0x8000000
 
 clean:
-	@rm -rf $(BUILD_DIR) $(PROJECT).elf $(PROJECT).map
+	@rm -rf $(BUILD_DIR) *.elf *.bin *.map
 
 codecheck:
 	@$(CODECHECK) $(CODECHECK_FLAGS) $(CODECHECK_FILES)

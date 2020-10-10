@@ -3,5 +3,4 @@ bin
 *.elf
 *.ld
 *.map
-*.uf2
 

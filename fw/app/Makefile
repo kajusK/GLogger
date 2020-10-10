@@ -24,6 +24,8 @@ FPU = -msoft-float
 SRCDIR = src
 # path to AFW library
 AFW = ../external/AFW
+# path to a bootloader binary
+BOOTLOADER = ../bl/logger-bl.bin
 
 # linker script (generics in libopencm3/lib/stm32)
 LDSCRIPT = stm32f070cbt6.ld
@@ -39,8 +41,11 @@ AFW_SOURCES = $(wildcard $(AFW)/sources/hal/*.c) \
 	      $(AFW)/sources/drivers/spi_flash.c \
 	      $(AFW)/sources/drivers/ssd1306.c \
 	      $(AFW)/sources/modules/log.c \
+	      $(AFW)/sources/modules/fw.c \
 	      $(AFW)/sources/modules/nmea.c \
 	      $(AFW)/sources/modules/ramdisk.c \
+	      $(AFW)/sources/modules/msc.c \
+	      $(AFW)/sources/modules/uf2.c \
 	      $(wildcard $(AFW)/sources/modules/cgui/*.c) \
 	      $(AFW)/sources/utils/crc.c \
 	      $(AFW)/sources/utils/math.c \
@@ -110,7 +115,8 @@ SIZE	:= $(PREFIX)size
 #######################
 # Build rules
 #######################
-all: codecheck $(OPENCM3_LIB_PATH) $(PROJECT).elf size
+all: codecheck $(OPENCM3_LIB_PATH) $(PROJECT).elf $(PROJECT)_debug.elf image uf2 size
+image: $(PROJECT)_image.bin
 
 size: $(PROJECT).elf
 	$(SIZE) $<
@@ -134,14 +140,31 @@ $(BUILD_DIR)/%.o: $(AFW)/%.c
 $(PROJECT).elf: $(BOARD_GPIO_FILE) $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
+$(PROJECT).bin: $(PROJECT).elf
+	$(OBJCOPY) -O binary $(PROJECT).elf $(PROJECT).bin
+
+# add fw header to image to allow flashing it directly next to bootloader
+$(PROJECT)_debug.elf: $(PROJECT).elf $(PROJECT).bin $(BOOTLOADER)
+	$(AFW)/tools/fw.py --hdr $(PROJECT).bin $(PROJECT)_hdr.bin
+	cp $< $@
+	$(OBJCOPY) --add-section .header=$(PROJECT)_hdr.bin --set-section-flags .header=alloc,load,data --change-section-address .header=0x08000800 $@ 2> /dev/null
+	$(OBJCOPY) --add-section .header2=$(PROJECT)_hdr.bin --set-section-flags .header2=alloc,load,data --change-section-address .header2=0x8010400 $@ 2> /dev/null
+	$(OBJCOPY) --add-section .bootloader=$(BOOTLOADER) --set-section-flags .bootloader=alloc,load,data --change-section-address .bootloader=0x08000000 $@ 2> /dev/null
+
+$(PROJECT)_image.bin: $(PROJECT).bin $(BOOTLOADER)
+	$(AFW)/tools/fw.py $< $@ --bl $(BOOTLOADER)
+
+uf2: $(PROJECT).bin
+	$(AFW)/tools/bin2uf2.py $(PROJECT).bin $(PROJECT).uf2
+
 flash: $(PROJECT).elf
 	st-flash write $< 0x8000000
 
 clean:
-	@rm -rf $(BUILD_DIR) $(PROJECT).elf $(PROJECT).map
+	@rm -rf $(BUILD_DIR) *.elf *.map *.bin *.uf2
 
 codecheck:
 	@$(CODECHECK) $(CODECHECK_FLAGS) $(CODECHECK_FILES)
 
-.PHONY: all clean flash codecheck
+.PHONY: all clean flash codecheck image
 -include $(OBJS:.o=.d)
