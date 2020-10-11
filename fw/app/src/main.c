@@ -23,8 +23,6 @@
  * @{
  */
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/i2c.h>
-#include <libopencm3/stm32/spi.h>
 
 #include <hal/io.h>
 #include <hal/i2c.h>

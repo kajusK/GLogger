@@ -26,7 +26,7 @@ SRCDIR = src
 AFW = ../external/AFW
 
 # linker script (generics in libopencm3/lib/stm32)
-LDSCRIPT = bootloader.ld
+LDSCRIPT = $(PROJECT).ld
 # STM32CubeMX project to generate board_gpio.h file
 MX_PROJECT = ../app/logger.ioc
 

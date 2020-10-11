@@ -28,7 +28,7 @@ AFW = ../external/AFW
 BOOTLOADER = ../bl/logger-bl.bin
 
 # linker script (generics in libopencm3/lib/stm32)
-LDSCRIPT = stm32f070cbt6.ld
+LDSCRIPT = $(PROJECT).ld
 # STM32CubeMX project to generate board_gpio.h file
 MX_PROJECT = $(PROJECT).ioc
 
